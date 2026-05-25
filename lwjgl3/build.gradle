@@ -1,0 +1,23 @@
+apply plugin: "java-library"
+
+sourceCompatibility = 17
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+
+dependencies {
+    implementation project(":core")
+    api "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdxVersion"
+    api "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
+    api "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-desktop"
+}
+
+jar {
+    archiveFileName.set("${appName}-desktop.jar")
+    manifest {
+        attributes 'Main-Class': 'com.valmerion.lwjgl3.Lwjgl3Launcher'
+    }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    dependsOn configurations.runtimeClasspath
+    from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+    // Exclude conflicting module-info files
+    exclude("META-INF/versions/**")
+}

@@ -2,86 +2,77 @@ package com.valmerion.utils;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.Pixmap.Format;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.utils.Disposable;
 
 /**
- * Generates simple colored placeholder textures so the game can run
- * before real art assets are placed in the assets/ folder.
+ * Procedurally generated placeholder textures.
+ * Used when real art files are absent.
  *
- * <p>All textures created here must be disposed when no longer needed.
- * They are NOT managed by AssetLoader.
+ * <p>All textures are lazily created and cached as singletons.
+ * Call {@link #disposeAll()} on application shutdown.
  */
-public final class PlaceholderTextures implements Disposable {
+public final class PlaceholderTextures {
 
-    /** 1×1 fully opaque white pixel — useful for tinted quads. */
-    public final Texture white;
+    private PlaceholderTextures() {}
 
-    /** Generic dark button placeholder. */
-    public final Texture button;
+    // ── Cached instances ─────────────────────────────────────────────────────
 
-    /** Dark atmospheric menu background. */
-    public final Texture menuBg;
+    private static Texture white;
+    private static Texture button;
+    private static Texture menuBg;
 
-    public PlaceholderTextures() {
-        white   = solid(1, 1, Color.WHITE);
-        button  = roundedRect(320, 80, new Color(0.18f, 0.14f, 0.28f, 1f),
-                                       new Color(0.7f, 0.55f, 0.2f, 1f));
-        menuBg  = gradient(1280, 720,
-                           new Color(0.04f, 0.03f, 0.08f, 1f),
-                           new Color(0.10f, 0.07f, 0.18f, 1f));
-    }
+    // ── Public API ────────────────────────────────────────────────────────────
 
-    @Override
-    public void dispose() {
-        white .dispose();
-        button.dispose();
-        menuBg.dispose();
-    }
-
-    // ── Factories ─────────────────────────────────────────────────────────────
-
-    /** Single-color solid texture. */
-    public static Texture solid(int w, int h, Color color) {
-        Pixmap pm = new Pixmap(w, h, Format.RGBA8888);
-        pm.setColor(color);
-        pm.fill();
-        Texture t = new Texture(pm);
-        pm.dispose();
-        return t;
-    }
-
-    /**
-     * Rectangle with a coloured border (2 px).
-     */
-    public static Texture roundedRect(int w, int h, Color fill, Color border) {
-        Pixmap pm = new Pixmap(w, h, Format.RGBA8888);
-        pm.setColor(fill);
-        pm.fill();
-        pm.setColor(border);
-        pm.drawRectangle(0, 0, w, h);
-        pm.drawRectangle(1, 1, w - 2, h - 2);
-        Texture t = new Texture(pm);
-        pm.dispose();
-        return t;
-    }
-
-    /**
-     * Vertical linear gradient from {@code top} to {@code bottom}.
-     */
-    public static Texture gradient(int w, int h, Color top, Color bottom) {
-        Pixmap pm = new Pixmap(w, h, Format.RGBA8888);
-        for (int y = 0; y < h; y++) {
-            float t = y / (float) h;
-            float r = top.r + (bottom.r - top.r) * t;
-            float g = top.g + (bottom.g - top.g) * t;
-            float b = top.b + (bottom.b - top.b) * t;
-            pm.setColor(r, g, b, 1f);
-            pm.drawLine(0, y, w - 1, y);
+    /** 1×1 white pixel — used for solid-colour drawing. */
+    public static Texture whitePixel() {
+        if (white == null) {
+            Pixmap pm = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+            pm.setColor(Color.WHITE);
+            pm.fill();
+            white = new Texture(pm);
+            pm.dispose();
         }
-        Texture tex = new Texture(pm);
-        pm.dispose();
-        return tex;
+        return white;
+    }
+
+    /** Dark-bordered button placeholder (320×80). */
+    public static Texture button() {
+        if (button == null) {
+            int w = 320, h = 80;
+            Pixmap pm = new Pixmap(w, h, Pixmap.Format.RGBA8888);
+
+            pm.setColor(0.12f, 0.12f, 0.20f, 1f);
+            pm.fill();
+
+            pm.setColor(0.75f, 0.65f, 0.20f, 1f);  // gold border
+            pm.drawRectangle(0, 0, w, h);
+            pm.drawRectangle(2, 2, w - 4, h - 4);
+
+            button = new Texture(pm);
+            pm.dispose();
+        }
+        return button;
+    }
+
+    /** 1280×720 purple gradient menu background. */
+    public static Texture menuBackground() {
+        if (menuBg == null) {
+            int w = 256, h = 144; // scaled down for memory
+            Pixmap pm = new Pixmap(w, h, Pixmap.Format.RGBA8888);
+            for (int y = 0; y < h; y++) {
+                float t = (float) y / h;
+                pm.setColor(0.07f + t * 0.12f, 0.04f, 0.18f + t * 0.10f, 1f);
+                pm.drawLine(0, y, w, y);
+            }
+            menuBg = new Texture(pm);
+            pm.dispose();
+        }
+        return menuBg;
+    }
+
+    public static void disposeAll() {
+        if (white  != null) { white.dispose();  white  = null; }
+        if (button != null) { button.dispose(); button = null; }
+        if (menuBg != null) { menuBg.dispose(); menuBg = null; }
     }
 }

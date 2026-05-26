@@ -1,55 +1,96 @@
 package com.valmerion.ui;
 
-import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.math.MathUtils;
+import com.valmerion.utils.PlaceholderTextures;
 
 /**
- * Draws a simple HP bar using a 1×1 white pixel texture or coloured quads.
- * For now relies on batch colour + a shared white pixel texture.
+ * Animated health bar — green → yellow → red as HP falls.
+ *
+ * <p>Uses a white-pixel texture (set via {@link #setWhitePixel(Texture)})
+ * to draw filled rectangles.
  */
 public class HealthBar {
 
-    private static final Color BG_COLOR  = new Color(0.15f, 0.1f, 0.1f, 0.8f);
-    private static final Color HP_COLOR  = new Color(0.8f, 0.15f, 0.15f, 1f);
-    private static final Color HP_HIGH   = new Color(0.2f, 0.8f, 0.2f, 1f);
-    private static final Color HP_MED    = new Color(0.9f, 0.75f, 0.1f, 1f);
+    private static final float LERP_SPEED = 5f;
 
-    private final float x, y, width, height;
-    private float displayRatio = 1f;  // smoothed towards actual ratio
+    private static Texture whitePixel;
+
+    /** Provide a 1×1 white pixel texture for solid-colour rendering. */
+    public static void setWhitePixel(Texture t) { whitePixel = t; }
+
+    // ── Layout ────────────────────────────────────────────────────────────────
+    private final float x, y, w, h;
     private final String label;
 
-    // Shared pixel — set once from AcademyScreen
-    private static com.badlogic.gdx.graphics.Texture whitePixel;
+    // ── State ─────────────────────────────────────────────────────────────────
+    private float displayRatio = 1f;   // smoothly interpolated
 
-    public static void setWhitePixel(com.badlogic.gdx.graphics.Texture t) {
-        whitePixel = t;
-    }
+    // ── Font (optional) ───────────────────────────────────────────────────────
+    private static BitmapFont labelFont;
+    private final GlyphLayout layout = new GlyphLayout();
 
     public HealthBar(float x, float y, float w, float h, String label) {
-        this.x = x; this.y = y; this.width = w; this.height = h;
+        this.x     = x;
+        this.y     = y;
+        this.w     = w;
+        this.h     = h;
         this.label = label;
     }
 
-    public void update(float delta, float hp, float maxHp) {
-        float target = maxHp > 0 ? hp / maxHp : 0f;
-        displayRatio = MathUtils.lerp(displayRatio, target, delta * 6f);
+    /** Update the displayed HP value (lerps toward target). */
+    public void update(float delta, float currentHp, float maxHp) {
+        float target  = maxHp > 0 ? currentHp / maxHp : 0f;
+        displayRatio += (target - displayRatio) * LERP_SPEED * delta;
+        displayRatio  = Math.max(0f, Math.min(1f, displayRatio));
     }
 
     public void render(SpriteBatch batch) {
-        if (whitePixel == null) return;
+        Texture px = whitePixel != null ? whitePixel : PlaceholderTextures.whitePixel();
+        if (px == null) return;
 
-        // Background
-        batch.setColor(BG_COLOR);
-        batch.draw(whitePixel, x, y, width, height);
+        // Background (dark)
+        batch.setColor(0.15f, 0.10f, 0.10f, 0.85f);
+        batch.draw(px, x, y, w, h);
 
-        // HP fill
-        Color hpColor = displayRatio > 0.5f ? HP_HIGH
-                      : displayRatio > 0.25f ? HP_MED
-                      : HP_COLOR;
-        batch.setColor(hpColor);
-        batch.draw(whitePixel, x + 2, y + 2, (width - 4) * displayRatio, height - 4);
+        // Filled portion — colour depends on ratio
+        float r, g;
+        if (displayRatio > 0.5f) {
+            // green → yellow
+            float t = (displayRatio - 0.5f) * 2f;
+            r = 1f - t; g = 1f;
+        } else {
+            // yellow → red
+            float t = displayRatio * 2f;
+            r = 1f; g = t;
+        }
+        batch.setColor(r, g, 0.1f, 0.90f);
+        batch.draw(px, x + 1, y + 1, (w - 2) * displayRatio, h - 2);
 
-        batch.setColor(Color.WHITE);
+        // Border
+        batch.setColor(0.55f, 0.50f, 0.45f, 1f);
+        batch.draw(px, x,         y,         w, 1f);
+        batch.draw(px, x,         y + h - 1, w, 1f);
+        batch.draw(px, x,         y,         1f, h);
+        batch.draw(px, x + w - 1, y,         1f, h);
+
+        // Label
+        BitmapFont f = getFont();
+        layout.setText(f, label);
+        f.setColor(0.9f, 0.85f, 0.75f, 1f);
+        f.draw(batch, label, x + (w - layout.width) / 2f, y + h + layout.height + 2f);
+        f.setColor(1f, 1f, 1f, 1f);
+
+        batch.setColor(1f, 1f, 1f, 1f);
+    }
+
+    private static BitmapFont getFont() {
+        if (labelFont == null) {
+            labelFont = new BitmapFont();
+            labelFont.getData().setScale(0.85f);
+        }
+        return labelFont;
     }
 }

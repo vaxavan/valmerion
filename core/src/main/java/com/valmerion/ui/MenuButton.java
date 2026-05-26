@@ -9,10 +9,10 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
 
 /**
- * Clickable button that shows a texture (with optional hover texture)
- * or falls back to a coloured label when textures are absent.
+ * Clickable menu button. Caller must supply the current touch position
+ * in world-space (unprojected through the viewport) to {@link #render}.
  *
- * <p>Coordinate system: world-space at 1280×720 (FitViewport).
+ * <p>Coordinate system: world-space at 1280×720.
  */
 public class MenuButton {
 
@@ -20,23 +20,17 @@ public class MenuButton {
     private static final float SCALE_SPEED = 10f;
 
     private final Texture   texNormal;
-    private final Texture   texHover;   // may be null → tint normal instead
+    private final Texture   texHover;
     private final String    label;
     private final Rectangle bounds;
     private final GlyphLayout layout = new GlyphLayout();
 
-    private float   scale        = 1f;
-    private boolean hovered      = false;
-    private boolean justClicked  = false;
+    private float   scale       = 1f;
+    private boolean hovered     = false;
+    private boolean justClicked = false;
 
-    // Lazily created fallback font (shared across instances)
     private static BitmapFont fallbackFont;
 
-    /**
-     * @param texNormal normal-state texture (may be null)
-     * @param texHover  hover-state texture  (may be null)
-     * @param label     fallback / accessibility label
-     */
     public MenuButton(Texture texNormal, Texture texHover, String label,
                       float x, float y, float w, float h) {
         this.texNormal = texNormal;
@@ -45,21 +39,27 @@ public class MenuButton {
         this.bounds    = new Rectangle(x, y, w, h);
     }
 
-    /** Convenience constructor without a hover texture. */
     public MenuButton(Texture texNormal, String label,
                       float x, float y, float w, float h) {
         this(texNormal, null, label, x, y, w, h);
     }
 
     /**
-     * Update + draw. Must be called while the SpriteBatch is active and
-     * the viewport has already been applied.
+     * Update and draw.
+     *
+     * @param batch   active SpriteBatch (viewport already applied)
+     * @param delta   frame time
+     * @param touchWx touch X in world coordinates (viewport-unprojected)
+     * @param touchWy touch Y in world coordinates (viewport-unprojected)
      */
-    public void render(SpriteBatch batch, float delta) {
+    public void render(SpriteBatch batch, float delta, float touchWx, float touchWy) {
         justClicked = false;
-        updateHover();
+        hovered     = bounds.contains(touchWx, touchWy);
 
-        // Smooth scale lerp
+        if (hovered && Gdx.input.justTouched()) {
+            justClicked = true;
+        }
+
         float target = hovered ? HOVER_SCALE : 1f;
         scale += (target - scale) * SCALE_SPEED * delta;
 
@@ -70,10 +70,7 @@ public class MenuButton {
 
         if (texNormal != null) {
             Texture draw = (hovered && texHover != null) ? texHover : texNormal;
-            // Brighten on hover when there is no separate hover texture
-            if (hovered && texHover == null) {
-                batch.setColor(1f, 1f, 0.85f, 1f);
-            }
+            if (hovered && texHover == null) batch.setColor(1f, 1f, 0.85f, 1f);
             batch.draw(draw, dx, dy, sw, sh);
             batch.setColor(Color.WHITE);
         } else {
@@ -81,21 +78,10 @@ public class MenuButton {
         }
     }
 
-    /** @return true only on the exact frame the button was clicked. */
+    /** @return true only on the exact frame the button was clicked/tapped. */
     public boolean isJustClicked() { return justClicked; }
 
     // ── Private ───────────────────────────────────────────────────────────────
-
-    private void updateHover() {
-        // Remap raw mouse coords to world coords (FitViewport 1280×720)
-        float wx = Gdx.input.getX() / (float) Gdx.graphics.getWidth()  * 1280f;
-        float wy = (1f - Gdx.input.getY() / (float) Gdx.graphics.getHeight()) * 720f;
-
-        hovered = bounds.contains(wx, wy);
-        if (hovered && Gdx.input.justTouched()) {
-            justClicked = true;
-        }
-    }
 
     private void drawFallback(SpriteBatch batch, float x, float y, float w, float h) {
         BitmapFont f = getFallbackFont();

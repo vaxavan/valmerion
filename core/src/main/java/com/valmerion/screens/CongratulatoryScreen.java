@@ -8,58 +8,53 @@ import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.valmerion.ValmerionGame;
 import com.valmerion.assets.AssetLoader;
 import com.valmerion.utils.Constants;
+import com.valmerion.utils.PlaceholderTextures;
 
 /**
- * End-of-tutorial screen.
+ * End-of-tutorial victory screen.
  *
- * <p>Shows congratulations text and "В скором времени будет продолжение..."
- * with a slow animated fade and star particle effect.
+ * <p>Three text lines fade in sequentially; pressing ENTER / tapping
+ * returns to the main menu.
  */
 public class CongratulatoryScreen extends BaseScreen {
 
-    private static final String LINE_CONGRATS  = "Поздравляем с прохождением обучения!";
-    private static final String LINE_SOON      = "В скором времени будет продолжение...";
-    private static final String LINE_PRESS     = "[ ENTER ] — вернуться в главное меню";
+    private static final String LINE_CONGRATS = "Поздравляем с прохождением обучения!";
+    private static final String LINE_SOON     = "В скором времени будет продолжение...";
+    private static final String LINE_PRESS    = "[ НАЖМИ ] чтобы вернуться в меню";
 
     private final BitmapFont  font;
     private final BitmapFont  titleFont;
     private final GlyphLayout layout = new GlyphLayout();
 
     private float totalTime = 0f;
-    // Each line fades in one after another
-    private float alpha1 = 0f;
-    private float alpha2 = 0f;
-    private float alpha3 = 0f;
+    private float alpha1, alpha2, alpha3;
 
-    // Simple star particles
-    private final float[] starX;
-    private final float[] starY;
-    private final float[] starSpeed;
-    private final float[] starAlpha;
+    // ── Stars ─────────────────────────────────────────────────────────────────
     private static final int STAR_COUNT = 80;
+    private final float[] starX     = new float[STAR_COUNT];
+    private final float[] starY     = new float[STAR_COUNT];
+    private final float[] starSpeed = new float[STAR_COUNT];
+    private final float[] starSize  = new float[STAR_COUNT];
 
     public CongratulatoryScreen(ValmerionGame game) {
         super(game);
-        font      = assets.font(AssetLoader.FONT_MAIN);
-        titleFont = assets.font(AssetLoader.FONT_TITLE);
+        BitmapFont loaded = assets.font(AssetLoader.FONT_MAIN);
+        font      = loaded != null ? loaded : new BitmapFont();
+        BitmapFont loadedTitle = assets.font(AssetLoader.FONT_TITLE);
+        titleFont = loadedTitle != null ? loadedTitle : font;
 
-        // Init stars
-        starX     = new float[STAR_COUNT];
-        starY     = new float[STAR_COUNT];
-        starSpeed = new float[STAR_COUNT];
-        starAlpha = new float[STAR_COUNT];
         java.util.Random rnd = new java.util.Random();
         for (int i = 0; i < STAR_COUNT; i++) {
             starX[i]     = rnd.nextFloat() * Constants.WORLD_WIDTH;
             starY[i]     = rnd.nextFloat() * Constants.WORLD_HEIGHT;
-            starSpeed[i] = 15f + rnd.nextFloat() * 30f;
-            starAlpha[i] = rnd.nextFloat();
+            starSpeed[i] = 20f + rnd.nextFloat() * 40f;
+            starSize[i]  = 2f + rnd.nextFloat() * 4f;
         }
     }
 
     @Override
     public void show() {
-        totalTime = 0;
+        totalTime = 0f;
         alpha1 = alpha2 = alpha3 = 0f;
     }
 
@@ -67,15 +62,13 @@ public class CongratulatoryScreen extends BaseScreen {
     public void render(float delta) {
         totalTime += delta;
 
-        // Staggered fade-ins
-        alpha1 = clamp(totalTime - 0.5f, 0f, 2f) / 2f;
-        alpha2 = clamp(totalTime - 2.5f, 0f, 2f) / 2f;
-        alpha3 = clamp(totalTime - 5.0f, 0f, 2f) / 2f;
+        alpha1 = clamp((totalTime - 0.5f) / 2f, 0f, 1f);
+        alpha2 = clamp((totalTime - 2.5f) / 2f, 0f, 1f);
+        alpha3 = clamp((totalTime - 5.0f) / 2f, 0f, 1f);
 
         // Update stars
         for (int i = 0; i < STAR_COUNT; i++) {
             starY[i] += starSpeed[i] * delta;
-            starAlpha[i] = (float)(0.4f + 0.6f * Math.sin(totalTime * 1.5f + i));
             if (starY[i] > Constants.WORLD_HEIGHT) starY[i] = 0;
         }
 
@@ -86,28 +79,15 @@ public class CongratulatoryScreen extends BaseScreen {
         batch.setProjectionMatrix(viewport.getCamera().combined);
         batch.begin();
 
-        // (Stars would need a pixel texture — drawn via font dots as fallback)
-
-        if (titleFont != null) {
-            drawCentred(titleFont, LINE_CONGRATS, Constants.WORLD_HEIGHT / 2f + 80f,
-                    1f, 0.9f, 0.4f, alpha1);
-        } else if (font != null) {
-            drawCentred(font, LINE_CONGRATS, Constants.WORLD_HEIGHT / 2f + 80f,
-                    1f, 0.9f, 0.4f, alpha1);
-        }
-
-        if (font != null) {
-            drawCentred(font, LINE_SOON,  Constants.WORLD_HEIGHT / 2f,
-                    0.8f, 0.85f, 1f, alpha2);
-            drawCentred(font, LINE_PRESS, 80f,
-                    0.6f, 0.6f, 0.6f, alpha3);
-        }
+        drawStars();
+        drawLines();
 
         batch.end();
 
-        if (alpha3 > 0.5f &&
-                (Gdx.input.isKeyJustPressed(Keys.ENTER) || Gdx.input.isKeyJustPressed(Keys.ESCAPE)
-                 || Gdx.input.justTouched())) {
+        if (alpha3 > 0.5f
+                && (Gdx.input.isKeyJustPressed(Keys.ENTER)
+                    || Gdx.input.isKeyJustPressed(Keys.ESCAPE)
+                    || Gdx.input.justTouched())) {
             game.setScreen(new MenuScreen(game));
         }
     }
@@ -115,14 +95,32 @@ public class CongratulatoryScreen extends BaseScreen {
     @Override
     public void dispose() {}
 
-    // ── Helpers ───────────────────────────────────────────────────────────────
+    // ── Private ───────────────────────────────────────────────────────────────
+
+    private void drawStars() {
+        com.badlogic.gdx.graphics.Texture wp = PlaceholderTextures.whitePixel();
+        if (wp == null) return;
+        for (int i = 0; i < STAR_COUNT; i++) {
+            float a = (float)(0.3f + 0.5f * Math.sin(totalTime * 1.2f + i * 0.4f));
+            batch.setColor(0.85f, 0.85f, 1f, a);
+            batch.draw(wp, starX[i], starY[i], starSize[i], starSize[i]);
+        }
+        batch.setColor(1f, 1f, 1f, 1f);
+    }
+
+    private void drawLines() {
+        float cy = Constants.WORLD_HEIGHT / 2f;
+        drawCentred(titleFont, LINE_CONGRATS, cy + 90f, 1f, 0.90f, 0.40f, alpha1);
+        drawCentred(font,      LINE_SOON,     cy + 10f, 0.75f, 0.85f, 1f,  alpha2);
+        drawCentred(font,      LINE_PRESS,    cy - 80f, 0.55f, 0.55f, 0.55f, alpha3);
+    }
 
     private void drawCentred(BitmapFont f, String text, float y,
                               float r, float g, float b, float a) {
         layout.setText(f, text);
         f.setColor(r, g, b, a);
         f.draw(batch, text, (Constants.WORLD_WIDTH - layout.width) / 2f, y);
-        f.setColor(1, 1, 1, 1);
+        f.setColor(1f, 1f, 1f, 1f);
     }
 
     private static float clamp(float v, float min, float max) {

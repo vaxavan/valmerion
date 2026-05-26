@@ -5,26 +5,30 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.valmerion.utils.Constants;
+import com.valmerion.utils.PlaceholderTextures;
 
 /**
- * Displays a temporary tutorial hint that fades in, holds, then fades out.
+ * Temporary tutorial hint: fade-in → hold → fade-out cycle.
+ *
+ * <p>Falls back to the LibGDX default BitmapFont if no custom font is supplied.
  */
 public class HintOverlay {
 
-    private String text     = "";
-    private float  alpha    = 0f;
-    private float  timer    = 0f;
-    private boolean active  = false;
+    private String  text   = "";
+    private float   alpha  = 0f;
+    private float   timer  = 0f;
+    private boolean active = false;
 
     private final BitmapFont  font;
     private final GlyphLayout layout;
 
+    /** @param font may be null — a fallback font is used instead. */
     public HintOverlay(BitmapFont font) {
-        this.font   = font;
+        this.font   = font != null ? font : new BitmapFont();
         this.layout = new GlyphLayout();
     }
 
-    /** Show a new hint message. */
+    /** Display a new hint message from the beginning of its cycle. */
     public void show(String message) {
         text   = message;
         alpha  = 0f;
@@ -37,18 +41,16 @@ public class HintOverlay {
     public void update(float delta) {
         if (!active) return;
         timer += delta;
-        float total = Constants.HINT_FADE_DURATION * 2 + Constants.HINT_DISPLAY_TIME;
+        float fadeDur    = Constants.HINT_FADE_DURATION;
+        float displayDur = Constants.HINT_DISPLAY_TIME;
+        float total      = fadeDur * 2 + displayDur;
 
-        if (timer < Constants.HINT_FADE_DURATION) {
-            // Fade in
-            alpha = timer / Constants.HINT_FADE_DURATION;
-        } else if (timer < Constants.HINT_FADE_DURATION + Constants.HINT_DISPLAY_TIME) {
-            // Hold
+        if (timer < fadeDur) {
+            alpha = timer / fadeDur;
+        } else if (timer < fadeDur + displayDur) {
             alpha = 1f;
         } else if (timer < total) {
-            // Fade out
-            alpha = 1f - (timer - Constants.HINT_FADE_DURATION - Constants.HINT_DISPLAY_TIME)
-                    / Constants.HINT_FADE_DURATION;
+            alpha = 1f - (timer - fadeDur - displayDur) / fadeDur;
         } else {
             active = false;
             alpha  = 0f;
@@ -56,17 +58,28 @@ public class HintOverlay {
     }
 
     public void render(SpriteBatch batch) {
-        if (!active || font == null || alpha <= 0) return;
+        if (!active || alpha <= 0f) return;
 
         layout.setText(font, text);
         float x = (Constants.WORLD_WIDTH  - layout.width)  / 2f;
-        float y = Constants.WORLD_HEIGHT  - 60f;
+        float y = Constants.WORLD_HEIGHT - 55f;
 
-        // Dark shadow
-        font.setColor(0, 0, 0, alpha * 0.7f);
-        font.draw(batch, text, x + 2, y - 2);
+        // Dark backdrop
+        com.badlogic.gdx.graphics.Texture wp = PlaceholderTextures.whitePixel();
+        if (wp != null) {
+            float pad = 14f;
+            batch.setColor(0f, 0f, 0f, alpha * 0.55f);
+            batch.draw(wp, x - pad, y - layout.height - pad / 2f,
+                       layout.width + pad * 2, layout.height + pad);
+            batch.setColor(Color.WHITE);
+        }
 
-        font.setColor(1f, 0.95f, 0.7f, alpha);
+        // Shadow
+        font.setColor(0f, 0f, 0f, alpha * 0.65f);
+        font.draw(batch, text, x + 2f, y - 2f);
+
+        // Text
+        font.setColor(1f, 0.95f, 0.70f, alpha);
         font.draw(batch, text, x, y);
         font.setColor(Color.WHITE);
     }

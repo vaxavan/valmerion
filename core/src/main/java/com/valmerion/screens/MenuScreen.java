@@ -6,16 +6,19 @@ import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.math.Vector3;
 import com.valmerion.ValmerionGame;
 import com.valmerion.assets.AssetLoader;
 import com.valmerion.ui.MenuButton;
 import com.valmerion.utils.Constants;
+import com.valmerion.utils.PlaceholderTextures;
 
 /**
  * Main menu screen — background + 3 buttons (New Game, Settings, Exit).
  *
- * <p>Buttons are centred vertically with equal spacing.
- * Fade-in animation plays on entry.
+ * <p>Touch/cursor position is unprojected through the FitViewport before
+ * being passed to each button, so hit-testing is correct on all Android
+ * devices regardless of letterbox/pillarbox padding.
  */
 public class MenuScreen extends BaseScreen {
 
@@ -35,26 +38,32 @@ public class MenuScreen extends BaseScreen {
     // ── Audio ─────────────────────────────────────────────────────────────────
     private final Music music;
 
+    // ── Touch ─────────────────────────────────────────────────────────────────
+    private final Vector3 touchWorld = new Vector3();
+
     public MenuScreen(ValmerionGame game) {
         super(game);
 
-        background = assets.texture(AssetLoader.TEX_MENU_BG);
+        Texture bg = assets.texture(AssetLoader.TEX_MENU_BG);
+        background = bg != null ? bg : PlaceholderTextures.menuBackground();
 
-        // Button textures (null-safe — MenuButton handles missing textures)
-        Texture tNew     = assets.texture(AssetLoader.TEX_BTN_NEW_GAME);
-        Texture tNewHov  = assets.texture(AssetLoader.TEX_BTN_NEW_GAME_HOV);
-        Texture tSet     = assets.texture(AssetLoader.TEX_BTN_SETTINGS);
-        Texture tExit    = assets.texture(AssetLoader.TEX_BTN_EXIT);
+        Texture tNew    = assets.texture(AssetLoader.TEX_BTN_NEW_GAME);
+        Texture tNewHov = assets.texture(AssetLoader.TEX_BTN_NEW_GAME_HOV);
+        Texture tSet    = assets.texture(AssetLoader.TEX_BTN_SETTINGS);
+        Texture tExit   = assets.texture(AssetLoader.TEX_BTN_EXIT);
 
-        float cx   = Constants.WORLD_WIDTH  / 2f - BTN_W / 2f;
+        if (tNew  == null) tNew  = PlaceholderTextures.button();
+        if (tSet  == null) tSet  = PlaceholderTextures.button();
+        if (tExit == null) tExit = PlaceholderTextures.button();
+
+        float cx     = Constants.WORLD_WIDTH  / 2f - BTN_W / 2f;
         float totalH = BTN_H * 3 + BTN_GAP * 2;
-        float baseY  = Constants.WORLD_HEIGHT / 2f - totalH / 2f - 40f; // slight downward offset
+        float baseY  = Constants.WORLD_HEIGHT / 2f - totalH / 2f - 40f;
 
-        btnNewGame  = new MenuButton(tNew,  tNewHov, "New Game",  cx, baseY + (BTN_H + BTN_GAP) * 2, BTN_W, BTN_H);
-        btnSettings = new MenuButton(tSet,  null,    "Settings",  cx, baseY + (BTN_H + BTN_GAP),     BTN_W, BTN_H);
-        btnExit     = new MenuButton(tExit, null,    "Exit",       cx, baseY,                         BTN_W, BTN_H);
+        btnNewGame  = new MenuButton(tNew,  tNewHov, "Новая игра", cx, baseY + (BTN_H + BTN_GAP) * 2, BTN_W, BTN_H);
+        btnSettings = new MenuButton(tSet,  null,    "Настройки",  cx, baseY + (BTN_H + BTN_GAP),     BTN_W, BTN_H);
+        btnExit     = new MenuButton(tExit, null,    "Выход",      cx, baseY,                         BTN_W, BTN_H);
 
-        // Music
         music = assets.music(AssetLoader.MUSIC_MENU);
         if (music != null) {
             music.setLooping(true);
@@ -63,12 +72,7 @@ public class MenuScreen extends BaseScreen {
         }
     }
 
-    // ── Screen lifecycle ──────────────────────────────────────────────────────
-
-    @Override
-    public void show() {
-        fadeAlpha = 0f;
-    }
+    @Override public void show() { fadeAlpha = 0f; }
 
     @Override
     public void render(float delta) {
@@ -81,27 +85,24 @@ public class MenuScreen extends BaseScreen {
         batch.setProjectionMatrix(viewport.getCamera().combined);
         batch.begin();
 
-        // Background
         batch.setColor(fadeAlpha, fadeAlpha, fadeAlpha, 1f);
-        if (background != null) {
-            batch.draw(background, 0, 0, Constants.WORLD_WIDTH, Constants.WORLD_HEIGHT);
-        }
+        batch.draw(background, 0, 0, Constants.WORLD_WIDTH, Constants.WORLD_HEIGHT);
 
-        // Buttons
-        batch.setColor(1f, 1f, 1f, fadeAlpha);
         if (fadeAlpha >= 0.5f) {
-            btnNewGame .render(batch, delta);
-            btnSettings.render(batch, delta);
-            btnExit    .render(batch, delta);
+            // Unproject cursor/touch through viewport to get world-space position
+            touchWorld.set(Gdx.input.getX(), Gdx.input.getY(), 0);
+            viewport.unproject(touchWorld);
+
+            batch.setColor(1f, 1f, 1f, fadeAlpha);
+            btnNewGame .render(batch, delta, touchWorld.x, touchWorld.y);
+            btnSettings.render(batch, delta, touchWorld.x, touchWorld.y);
+            btnExit    .render(batch, delta, touchWorld.x, touchWorld.y);
         }
 
         batch.setColor(1f, 1f, 1f, 1f);
         batch.end();
 
-        // Handle clicks only after fade is mostly done
-        if (fadeAlpha >= 0.85f) {
-            handleInput();
-        }
+        if (fadeAlpha >= 0.85f) handleInput();
     }
 
     @Override
@@ -113,11 +114,11 @@ public class MenuScreen extends BaseScreen {
 
     private void handleInput() {
         if (btnNewGame.isJustClicked()) {
-            click();
+            playClick();
             game.setScreen(new CutsceneScreen(game));
         }
         if (btnSettings.isJustClicked()) {
-            click();
+            playClick();
             game.setScreen(new SettingsScreen(game));
         }
         if (btnExit.isJustClicked() || Gdx.input.isKeyJustPressed(Keys.ESCAPE)) {
@@ -125,7 +126,7 @@ public class MenuScreen extends BaseScreen {
         }
     }
 
-    private void click() {
+    private void playClick() {
         Sound s = assets.sound(AssetLoader.SFX_BTN_CLICK);
         if (s != null) s.play(0.75f);
     }

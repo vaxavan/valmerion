@@ -1,9 +1,9 @@
 package com.valmerion.screens;
 
+import com.badlogic.gdx.Application;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.valmerion.ValmerionGame;
@@ -11,22 +11,26 @@ import com.valmerion.assets.AssetLoader;
 import com.valmerion.entities.Goblin;
 import com.valmerion.entities.Goblin.Mode;
 import com.valmerion.entities.Player;
+import com.valmerion.input.InputController;
+import com.valmerion.input.KeyboardController;
+import com.valmerion.input.TouchController;
 import com.valmerion.ui.HealthBar;
 import com.valmerion.ui.HintOverlay;
 import com.valmerion.utils.Constants;
+import com.valmerion.utils.PlaceholderTextures;
 
 /**
- * Academy tutorial screen.
+ * Academy tutorial screen — teaches the player all core mechanics.
  *
  * <pre>
- * Tutorial stages:
- *  0  INTRO        — 2.5 s welcome pause
- *  1  WALK         — move A/D > 80 px
- *  2  JUMP         — press SPACE (unlock jump first)
- *  3  ATTACK       — press F   (unlock attack first)
- *  4  DUMMY_GOBLIN — static goblin spawns; player kills it
- *  5  LIVE_GOBLIN  — aggressive goblin spawns
- *  6  CONGRATS     — 2 s pause → CongratulatoryScreen
+ * Stages:
+ *  0  INTRO        — welcome message (2.5 s)
+ *  1  WALK         — move left/right 80+ pixels
+ *  2  JUMP         — jump ability unlocked
+ *  3  ATTACK       — attack ability unlocked
+ *  4  DUMMY_GOBLIN — defeat the static goblin
+ *  5  LIVE_GOBLIN  — defeat the aggressive goblin
+ *  6  CONGRATS     — short pause then CongratulatoryScreen
  * </pre>
  */
 public class AcademyScreen extends BaseScreen {
@@ -40,19 +44,30 @@ public class AcademyScreen extends BaseScreen {
     private static final int STAGE_LIVE_GOBLIN  = 5;
     private static final int STAGE_CONGRATS     = 6;
 
-    private static final String[] HINTS = {
+    // ── Platform-aware hint texts ─────────────────────────────────────────────
+    private static final String[] HINTS_DESKTOP = {
         "Добро пожаловать в Академию Валмерион!",
-        "Нажимай  A / ←  или  D / →  для передвижения",
-        "Нажми  ПРОБЕЛ  чтобы прыгнуть",
-        "Нажми  F  чтобы атаковать",
+        "Нажмите A / ← или D / → чтобы двигаться",
+        "Нажмите ПРОБЕЛ чтобы прыгнуть",
+        "Нажмите F чтобы атаковать",
         "Победи неподвижного гоблина!",
         "Осторожно — теперь гоблин атакует!",
-        "Отличная работа!"
+        "Отличная работа, герой!"
+    };
+    private static final String[] HINTS_MOBILE = {
+        "Добро пожаловать в Академию Валмерион!",
+        "Нажми кнопки  <  >  для передвижения",
+        "Нажми кнопку  ^  чтобы прыгнуть",
+        "Нажми кнопку  F  чтобы атаковать",
+        "Победи неподвижного гоблина!",
+        "Осторожно — теперь гоблин атакует!",
+        "Отличная работа, герой!"
     };
 
     // ── Game objects ──────────────────────────────────────────────────────────
-    private final Player player;
-    private       Goblin goblin;
+    private final Player         player;
+    private       Goblin         goblin;
+    private final InputController inputController;
 
     // ── UI ────────────────────────────────────────────────────────────────────
     private final HintOverlay hint;
@@ -64,10 +79,10 @@ public class AcademyScreen extends BaseScreen {
     private int   stage      = STAGE_INTRO;
     private float stageTimer = 0f;
     private float initPosX;
+    private boolean isMobile;
 
     // ── Visuals ───────────────────────────────────────────────────────────────
-    private final Texture  background;
-    private       Texture  whitePixel;
+    private final Texture background;
 
     // ── Audio ─────────────────────────────────────────────────────────────────
     private final Music music;
@@ -75,21 +90,24 @@ public class AcademyScreen extends BaseScreen {
     public AcademyScreen(ValmerionGame game) {
         super(game);
 
+        isMobile = Gdx.app.getType() == Application.ApplicationType.Android
+                || Gdx.app.getType() == Application.ApplicationType.iOS;
+
         // White pixel for HealthBar
-        Pixmap pm = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
-        pm.setColor(1, 1, 1, 1);
-        pm.fill();
-        whitePixel = new Texture(pm);
-        pm.dispose();
-        HealthBar.setWhitePixel(whitePixel);
+        HealthBar.setWhitePixel(PlaceholderTextures.whitePixel());
 
         background  = assets.texture(AssetLoader.TEX_ACADEMY_BG);
-        font        = assets.font(AssetLoader.FONT_MAIN);
+        font        = getFont();
         hint        = new HintOverlay(font);
-        playerHpBar = new HealthBar(20, Constants.WORLD_HEIGHT - 54, 220, 30, "HP");
+        playerHpBar = new HealthBar(20,  Constants.WORLD_HEIGHT - 54, 220, 30, "HP");
         goblinHpBar = new HealthBar(Constants.WORLD_WIDTH - 240, Constants.WORLD_HEIGHT - 54, 220, 30, "Goblin");
 
-        player   = new Player(assets, 150f, 400f);
+        // ── Input ──────────────────────────────────────────────────────────────
+        inputController = isMobile
+                ? new TouchController(viewport)
+                : new KeyboardController();
+
+        player   = new Player(assets, 150f, 400f, inputController);
         initPosX = player.getPosition().x;
 
         music = assets.music(AssetLoader.MUSIC_ACADEMY);
@@ -106,7 +124,7 @@ public class AcademyScreen extends BaseScreen {
     public void show() {
         stage      = STAGE_INTRO;
         stageTimer = 0f;
-        hint.show(HINTS[STAGE_INTRO]);
+        hint.show(hints()[STAGE_INTRO]);
     }
 
     @Override
@@ -117,23 +135,26 @@ public class AcademyScreen extends BaseScreen {
 
     @Override
     public void dispose() {
-        if (music    != null) music.stop();
-        if (whitePixel != null) whitePixel.dispose();
+        if (music != null) music.stop();
         player.dispose();
         if (goblin != null) goblin.dispose();
+        inputController.dispose();
     }
 
     // ── Update ────────────────────────────────────────────────────────────────
 
     private void update(float delta) {
         stageTimer += delta;
+
+        inputController.update();  // Poll input once per frame
         player.update(delta);
 
         if (goblin != null) {
             goblin.update(delta);
-            goblin.updateAI(delta, player.getPosition().x,
-                            player.getPosition().x + 24f);
-            checkAttack();
+            goblin.updateAI(delta,
+                    player.getPosition().x,
+                    player.getPosition().x + 24f);
+            checkPlayerAttack();
         }
 
         hint.update(delta);
@@ -148,25 +169,39 @@ public class AcademyScreen extends BaseScreen {
             case STAGE_INTRO:
                 if (stageTimer > 2.5f) enter(STAGE_WALK);
                 break;
+
             case STAGE_WALK:
                 if (Math.abs(player.getPosition().x - initPosX) > 80f) enter(STAGE_JUMP);
                 break;
+
             case STAGE_JUMP:
                 if (player.getVelocity().y > 50f) enter(STAGE_ATTACK);
                 break;
+
             case STAGE_ATTACK:
                 if (player.isAttacking()) enter(STAGE_DUMMY_GOBLIN);
                 break;
+
             case STAGE_DUMMY_GOBLIN:
-                if (goblin == null) spawnGoblin(900f, Mode.STATIC);
-                else if (!goblin.isAlive()) { goblin = null; enter(STAGE_LIVE_GOBLIN); }
+                if (goblin == null)           spawnGoblin(900f, Mode.STATIC);
+                else if (!goblin.isAlive())   { goblin = null; enter(STAGE_LIVE_GOBLIN); }
                 break;
+
             case STAGE_LIVE_GOBLIN:
-                if (goblin == null) spawnGoblin(980f, Mode.AGGRESSIVE);
-                else if (!goblin.isAlive()) { goblin = null; enter(STAGE_CONGRATS); }
+                if (goblin == null) {
+                    spawnGoblin(980f, Mode.AGGRESSIVE);
+                } else if (!goblin.isAlive()) {
+                    goblin = null;
+                    enter(STAGE_CONGRATS);
+                } else if (!player.isAlive()) {
+                    // Respawn player so the tutorial can continue
+                    player.revive(Constants.PLAYER_MAX_HP);
+                    hint.show("Ты побеждён! Попробуй снова...");
+                }
                 break;
+
             case STAGE_CONGRATS:
-                if (stageTimer > 2.0f) game.setScreen(new CongratulatoryScreen(game));
+                if (stageTimer > 2.5f) game.setScreen(new CongratulatoryScreen(game));
                 break;
         }
     }
@@ -174,7 +209,7 @@ public class AcademyScreen extends BaseScreen {
     private void enter(int s) {
         stage      = s;
         stageTimer = 0f;
-        hint.show(HINTS[s]);
+        hint.show(hints()[s]);
         if (s == STAGE_JUMP)   player.unlockJump();
         if (s == STAGE_ATTACK) player.unlockAttack();
     }
@@ -182,11 +217,11 @@ public class AcademyScreen extends BaseScreen {
     private void spawnGoblin(float x, Mode mode) {
         goblin = new Goblin(assets, x, 400f, mode);
         goblin.setAttackListener(dmg -> {
-            if (goblin != null && goblin.isAlive()) player.takeDamage(dmg);
+            if (player.isAlive()) player.takeDamage(dmg);
         });
     }
 
-    private void checkAttack() {
+    private void checkPlayerAttack() {
         if (goblin == null || !goblin.isAlive()) return;
         com.badlogic.gdx.math.Rectangle atk = player.getAttackHitbox();
         if (atk != null && atk.overlaps(goblin.getHitbox())) {
@@ -204,17 +239,58 @@ public class AcademyScreen extends BaseScreen {
         batch.setProjectionMatrix(viewport.getCamera().combined);
         batch.begin();
 
+        // Background
         if (background != null) {
             batch.draw(background, 0, 0, Constants.WORLD_WIDTH, Constants.WORLD_HEIGHT);
+        } else {
+            drawPlaceholderBg();
         }
 
+        // Ground platform (visible floor)
+        drawGround();
+
+        // Entities
         player.render(batch);
         if (goblin != null) goblin.render(batch);
 
+        // UI
         playerHpBar.render(batch);
         if (goblin != null && goblin.isAlive()) goblinHpBar.render(batch);
         hint.render(batch);
 
+        // Touch controls (no-op on desktop)
+        inputController.renderOverlay(batch);
+
         batch.end();
+    }
+
+    private void drawPlaceholderBg() {
+        Texture wp = PlaceholderTextures.whitePixel();
+        // Dark gradient using two overlapping rects is hard; just a solid dark colour
+        batch.setColor(0.08f, 0.06f, 0.18f, 1f);
+        batch.draw(wp, 0, 0, Constants.WORLD_WIDTH, Constants.WORLD_HEIGHT);
+        batch.setColor(1f, 1f, 1f, 1f);
+    }
+
+    private void drawGround() {
+        Texture wp = PlaceholderTextures.whitePixel();
+        // Stone-grey ground
+        batch.setColor(0.35f, 0.30f, 0.25f, 1f);
+        batch.draw(wp, 0, 0, Constants.WORLD_WIDTH, 160f);
+        // Darker top edge
+        batch.setColor(0.25f, 0.20f, 0.15f, 1f);
+        batch.draw(wp, 0, 155f, Constants.WORLD_WIDTH, 8f);
+        batch.setColor(1f, 1f, 1f, 1f);
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+
+    private String[] hints() {
+        return isMobile ? HINTS_MOBILE : HINTS_DESKTOP;
+    }
+
+    private BitmapFont getFont() {
+        BitmapFont f = assets.font(AssetLoader.FONT_MAIN);
+        return f != null ? f : new BitmapFont();
     }
 }

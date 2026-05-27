@@ -10,7 +10,7 @@ APP_NAME="Gradle"
 APP_BASE_NAME="$(basename "$0")"
 
 # Default JVM options
-DEFAULT_JVM_OPTS='"-Xmx64m" "-Xms64m"'
+DEFAULT_JVM_OPTS='-Xmx512m -Xms128m'
 
 # OS specific support (must be 'true' or 'false').
 cygwin=false

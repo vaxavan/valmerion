@@ -24,24 +24,24 @@ import com.badlogic.gdx.graphics.g2d.freetype.FreetypeFontLoader.FreeTypeFontLoa
 public class AssetLoader {
 
     // ── Menu ──────────────────────────────────────────────────────────────────
-    public static final String TEX_MENU_BG           = "textures/menu/menu_bg.png";
+    public static final String TEX_MENU_BG           = "textures/menu/menu_background.jpg";
     public static final String TEX_BTN_NEW_GAME      = "textures/menu/btn_new_game.png";
-    public static final String TEX_BTN_NEW_GAME_HOV  = "textures/menu/btn_new_game_hover.png";
-    public static final String TEX_BTN_SETTINGS      = "textures/menu/btn_settings.png";
-    public static final String TEX_BTN_EXIT          = "textures/menu/btn_exit.png";
+    public static final String TEX_BTN_NEW_GAME_HOV  = "textures/menu/btn_new_game.png"; // same image as normal
+    public static final String TEX_BTN_SETTINGS      = "textures/menu/btn_setting.jpg";
+    public static final String TEX_BTN_EXIT          = "textures/menu/btn_exit.jpg";
 
     // ── Academy ───────────────────────────────────────────────────────────────
-    public static final String TEX_ACADEMY_BG        = "textures/academy/academy_bg.png";
+    public static final String TEX_ACADEMY_BG        = "textures/academy/bg_academy.png";
 
     // ── Cutscene slides ───────────────────────────────────────────────────────
-    /** Dark forest — "darkness spreads across the kingdom" */
-    public static final String SLIDE_01 = "textures/cutscene/slide_01.png";
-    /** Medieval city at night — "the kingdom of Valmerion" */
-    public static final String SLIDE_02 = "textures/cutscene/slide_02.png";
-    /** Cave/dungeon — "ancient evil awakens" */
-    public static final String SLIDE_03 = "textures/cutscene/slide_03.png";
-    /** Wizard's study — "the Academy awaits" */
-    public static final String SLIDE_04 = "textures/cutscene/slide_04.png";
+    /** Dark forest — "Тьма поглощает земли Валмериона..." */
+    public static final String SLIDE_01 = "textures/cutscene/bg_forest.png";
+    /** Medieval plaza — "Некогда великое королевство гибнет..." */
+    public static final String SLIDE_02 = "textures/cutscene/bg_plaza.png";
+    /** Zak's house — "Древнее зло пробудилось в глубинах..." */
+    public static final String SLIDE_03 = "textures/cutscene/bg_zak_house.png";
+    /** Academy — "Академия — твоя последняя надежда." */
+    public static final String SLIDE_04 = "textures/cutscene/bg_academy.png";
 
     public static final String[] CUTSCENE_SLIDES = {
         SLIDE_01, SLIDE_02, SLIDE_03, SLIDE_04

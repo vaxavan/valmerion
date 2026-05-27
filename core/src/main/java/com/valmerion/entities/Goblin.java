@@ -1,6 +1,7 @@
 package com.valmerion.entities;
 
 import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.valmerion.assets.AssetLoader;
@@ -120,7 +121,10 @@ public class Goblin extends Entity {
     @Override
     public void render(SpriteBatch batch) {
         TextureRegion frame = animations.getCurrentFrame();
-        if (frame == null) return;
+        if (frame == null) {
+            drawPlaceholder(batch);
+            return;
+        }
 
         if (hitFlashTimer > 0) {
             float t = hitFlashTimer / 0.2f;
@@ -134,6 +138,24 @@ public class Goblin extends Entity {
         } else {
             batch.draw(frame, drawX, position.y, DISPLAY_W, DISPLAY_H);
         }
+        batch.setColor(1f, 1f, 1f, 1f);
+    }
+
+    private void drawPlaceholder(SpriteBatch batch) {
+        Texture wp = getSharedWhitePixel();
+        if (wp == null) return;
+        float drawX = position.x + (HITBOX_W - DISPLAY_W) / 2f;
+        if (hitFlashTimer > 0) {
+            float t = hitFlashTimer / 0.2f;
+            batch.setColor(1f, 1f - t, 1f - t, 1f);
+        } else {
+            // Green goblin body
+            batch.setColor(0.2f, 0.65f, 0.2f, 1f);
+        }
+        batch.draw(wp, drawX + 8f, position.y, 56f, 56f);
+        // Head
+        batch.setColor(0.25f, 0.7f, 0.25f, 1f);
+        batch.draw(wp, drawX + 14f, position.y + 52f, 40f, 28f);
         batch.setColor(1f, 1f, 1f, 1f);
     }
 

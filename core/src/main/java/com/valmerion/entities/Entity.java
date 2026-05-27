@@ -1,5 +1,6 @@
 package com.valmerion.entities;
 
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
@@ -9,6 +10,13 @@ import com.badlogic.gdx.math.Vector2;
  * Holds position, velocity, AABB hitbox and HP.
  */
 public abstract class Entity {
+
+    // Shared 1×1 white texture for placeholder / tinted rendering.
+    // Set once from a screen (AcademyScreen) after OpenGL is available.
+    private static Texture sharedWhitePixel;
+
+    public  static void    setSharedWhitePixel(Texture t) { sharedWhitePixel = t; }
+    protected static Texture getSharedWhitePixel()        { return sharedWhitePixel; }
 
     protected final Vector2   position  = new Vector2();
     protected final Vector2   velocity  = new Vector2();

@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.valmerion.ValmerionGame;
 import com.valmerion.assets.AssetLoader;
+import com.valmerion.entities.Entity;
 import com.valmerion.entities.Goblin;
 import com.valmerion.entities.Goblin.Mode;
 import com.valmerion.entities.Player;
@@ -82,6 +83,7 @@ public class AcademyScreen extends BaseScreen {
         whitePixel = new Texture(pm);
         pm.dispose();
         HealthBar.setWhitePixel(whitePixel);
+        Entity.setSharedWhitePixel(whitePixel);
 
         background  = assets.texture(AssetLoader.TEX_ACADEMY_BG);
         font        = assets.font(AssetLoader.FONT_MAIN);

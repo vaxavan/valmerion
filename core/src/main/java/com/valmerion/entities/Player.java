@@ -3,6 +3,7 @@ package com.valmerion.entities;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
@@ -205,10 +206,15 @@ public class Player extends Entity {
     }
 
     private void drawPlaceholder(SpriteBatch batch) {
-        // Magenta rectangle as fallback when atlas is missing
-        batch.setColor(1f, 0f, 1f, 1f);
-        // Just draw a unit square placeholder via batch color — we'd need
-        // a pixel texture to truly fill, so we just reset and skip.
+        Texture wp = getSharedWhitePixel();
+        if (wp == null) return;
+        float drawX = position.x + (HITBOX_W - DISPLAY_W) / 2f;
+        // Torso (magenta)
+        batch.setColor(0.8f, 0.1f, 0.8f, 1f);
+        batch.draw(wp, drawX + 16f, position.y, 64f, 72f);
+        // Head
+        batch.setColor(1.0f, 0.8f, 0.6f, 1f);
+        batch.draw(wp, drawX + 28f, position.y + 68f, 40f, 28f);
         batch.setColor(1f, 1f, 1f, 1f);
     }
 }

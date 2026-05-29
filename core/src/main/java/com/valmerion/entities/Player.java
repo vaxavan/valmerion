@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 import com.valmerion.assets.AssetLoader;
 import com.valmerion.utils.Constants;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 
 /**
  * Player-controlled hero.
@@ -27,8 +28,10 @@ public class Player extends Entity {
     private static final float GRAVITY       = -900f;
     private static final float GROUND_Y      = 160f;   // platform top
 
-    // ── Animation ─────────────────────────────────────────────────────────────
-    private final AnimationSet animations;
+    // ── Class & Animation ─────────────────────────────────────────────────────
+    private PlayerClass  playerClass;
+    private AnimationSet animations;
+    private final TextureAtlas atlas;
 
     // ── State flags ───────────────────────────────────────────────────────────
     private boolean onGround     = false;
@@ -48,12 +51,35 @@ public class Player extends Entity {
     private boolean canAttack = false;
 
     public Player(AssetLoader assets, float x, float y) {
-        super(x, y, HITBOX_W, HITBOX_H, Constants.PLAYER_MAX_HP);
-
-        animations = new AnimationSet(assets.atlas(AssetLoader.ATLAS_PLAYER), "player");
-        sndJump    = assets.sound(AssetLoader.SFX_JUMP);
-        sndAttack  = assets.sound(AssetLoader.SFX_ATTACK);
+        this(assets, x, y, PlayerClass.WARRIOR);
     }
+
+    public Player(AssetLoader assets, float x, float y, PlayerClass startClass) {
+        super(x, y, HITBOX_W, HITBOX_H, startClass.maxHp);
+
+        this.atlas       = assets.atlas(AssetLoader.ATLAS_PLAYER);
+        this.playerClass = startClass;
+        this.animations  = new AnimationSet(atlas, startClass.prefix);
+
+        sndJump   = assets.sound(AssetLoader.SFX_JUMP);
+        sndAttack = assets.sound(AssetLoader.SFX_ATTACK);
+    }
+
+    // ── Class switching ───────────────────────────────────────────────────────
+
+    public void setPlayerClass(PlayerClass cls) {
+        if (cls == playerClass) return;
+        playerClass = cls;
+        animations  = new AnimationSet(atlas, cls.prefix);
+        maxHp       = cls.maxHp;
+        hp          = Math.min(hp, maxHp);
+    }
+
+    public void cycleClass() {
+        setPlayerClass(playerClass.next());
+    }
+
+    public PlayerClass getPlayerClass() { return playerClass; }
 
     // ── Update ────────────────────────────────────────────────────────────────
 
@@ -127,15 +153,21 @@ public class Player extends Entity {
     // ── Private ───────────────────────────────────────────────────────────────
 
     private void handleInput(float delta) {
+        // Class switch: Tab
+        if (Gdx.input.isKeyJustPressed(Keys.TAB)) {
+            cycleClass();
+        }
+
         // Horizontal movement
+        float speed = playerClass.moveSpeed;
         velocity.x = 0;
         if (canMove) {
             if (Gdx.input.isKeyPressed(Keys.A) || Gdx.input.isKeyPressed(Keys.LEFT)) {
-                velocity.x = -Constants.PLAYER_MOVE_SPEED;
+                velocity.x = -speed;
                 facingRight = false;
             }
             if (Gdx.input.isKeyPressed(Keys.D) || Gdx.input.isKeyPressed(Keys.RIGHT)) {
-                velocity.x = Constants.PLAYER_MOVE_SPEED;
+                velocity.x = speed;
                 facingRight = true;
             }
         }

@@ -215,6 +215,12 @@ public class AcademyScreen extends BaseScreen {
         if (goblin != null && goblin.isAlive()) goblinHpBar.render(batch);
         hint.render(batch);
 
+        if (font != null) {
+            font.draw(batch,
+                "Класс: " + player.getPlayerClass().displayName + "  [Tab — сменить]",
+                20, 30);
+        }
+
         batch.end();
     }
 }

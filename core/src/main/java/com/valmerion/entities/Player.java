@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 import com.valmerion.assets.AssetLoader;
+import com.valmerion.ui.TouchControls;
 import com.valmerion.utils.Constants;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 
@@ -49,6 +50,11 @@ public class Player extends Entity {
     private boolean canMove   = true;
     private boolean canJump   = false;
     private boolean canAttack = false;
+
+    // ── Touch controls (optional, set from screen) ────────────────────────────
+    private TouchControls touchControls = null;
+
+    public void setTouchControls(TouchControls tc) { this.touchControls = tc; }
 
     public Player(AssetLoader assets, float x, float y) {
         this(assets, x, y, PlayerClass.WARRIOR);
@@ -158,31 +164,31 @@ public class Player extends Entity {
             cycleClass();
         }
 
-        // Horizontal movement
+        // Horizontal movement — keyboard OR joystick
         float speed = playerClass.moveSpeed;
         velocity.x = 0;
         if (canMove) {
-            if (Gdx.input.isKeyPressed(Keys.A) || Gdx.input.isKeyPressed(Keys.LEFT)) {
-                velocity.x = -speed;
-                facingRight = false;
-            }
-            if (Gdx.input.isKeyPressed(Keys.D) || Gdx.input.isKeyPressed(Keys.RIGHT)) {
-                velocity.x = speed;
-                facingRight = true;
-            }
+            boolean leftKey  = Gdx.input.isKeyPressed(Keys.A) || Gdx.input.isKeyPressed(Keys.LEFT);
+            boolean rightKey = Gdx.input.isKeyPressed(Keys.D) || Gdx.input.isKeyPressed(Keys.RIGHT);
+            float touchH = (touchControls != null) ? touchControls.getHorizontal() : 0f;
+
+            if (leftKey  || touchH < -0.2f) { velocity.x = -speed; facingRight = false; }
+            if (rightKey || touchH >  0.2f) { velocity.x =  speed; facingRight = true;  }
         }
 
-        // Jump
-        if (canJump && onGround
-                && (Gdx.input.isKeyJustPressed(Keys.SPACE) || Gdx.input.isKeyJustPressed(Keys.UP))) {
+        // Jump — keyboard OR touch button
+        boolean jumpKey   = Gdx.input.isKeyJustPressed(Keys.SPACE) || Gdx.input.isKeyJustPressed(Keys.UP);
+        boolean jumpTouch = (touchControls != null) && touchControls.isJumpJustPressed();
+        if (canJump && onGround && (jumpKey || jumpTouch)) {
             velocity.y = Constants.PLAYER_JUMP_IMPULSE;
             onGround = false;
             if (sndJump != null) sndJump.play(0.6f);
         }
 
-        // Attack
-        if (canAttack && !attacking
-                && (Gdx.input.isKeyJustPressed(Keys.F) || Gdx.input.isKeyJustPressed(Keys.Z))) {
+        // Attack — keyboard OR touch button
+        boolean attackKey   = Gdx.input.isKeyJustPressed(Keys.F) || Gdx.input.isKeyJustPressed(Keys.Z);
+        boolean attackTouch = (touchControls != null) && touchControls.isAttackJustPressed();
+        if (canAttack && !attacking && (attackKey || attackTouch)) {
             attacking   = true;
             attackTimer = 0f;
             if (sndAttack != null) sndAttack.play(0.7f);

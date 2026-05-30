@@ -13,6 +13,7 @@ import com.valmerion.entities.Goblin.Mode;
 import com.valmerion.entities.Player;
 import com.valmerion.ui.HealthBar;
 import com.valmerion.ui.HintOverlay;
+import com.valmerion.ui.TouchControls;
 import com.valmerion.utils.Constants;
 
 /**
@@ -69,11 +70,15 @@ public class AcademyScreen extends BaseScreen {
     private final Texture  background;
     private       Texture  whitePixel;
 
+    // ── Touch controls ────────────────────────────────────────────────────────
+    private final TouchControls touchControls;
+
     // ── Audio ─────────────────────────────────────────────────────────────────
     private final Music music;
 
     public AcademyScreen(ValmerionGame game) {
         super(game);
+        touchControls = new TouchControls();
 
         // White pixel for HealthBar
         Pixmap pm = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
@@ -90,6 +95,7 @@ public class AcademyScreen extends BaseScreen {
         goblinHpBar = new HealthBar(Constants.WORLD_WIDTH - 240, Constants.WORLD_HEIGHT - 54, 220, 30, "Goblin");
 
         player   = new Player(assets, 150f, 400f);
+        player.setTouchControls(touchControls);
         initPosX = player.getPosition().x;
 
         music = assets.music(AssetLoader.MUSIC_ACADEMY);
@@ -126,6 +132,7 @@ public class AcademyScreen extends BaseScreen {
     // ── Update ────────────────────────────────────────────────────────────────
 
     private void update(float delta) {
+        touchControls.update();
         stageTimer += delta;
         player.update(delta);
 
@@ -220,6 +227,7 @@ public class AcademyScreen extends BaseScreen {
         playerHpBar.render(batch);
         if (goblin != null && goblin.isAlive()) goblinHpBar.render(batch);
         hint.render(batch);
+        touchControls.render(batch);
 
         if (font != null) {
             font.draw(batch,

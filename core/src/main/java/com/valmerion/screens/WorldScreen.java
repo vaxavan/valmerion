@@ -13,6 +13,7 @@ import com.valmerion.dialogue.DialogueOverlay;
 import com.valmerion.entities.Player;
 import com.valmerion.game.GameState;
 import com.valmerion.ui.HealthBar;
+import com.valmerion.ui.TouchControls;
 import com.valmerion.utils.Constants;
 import com.valmerion.utils.PlaceholderTextures;
 
@@ -33,12 +34,14 @@ public class WorldScreen extends BaseScreen {
     private final DialogueOverlay dialogueOverlay;
     private final HealthBar       hpBar;
     private final Texture         whitePixel;
+    private final TouchControls   touchControls;
 
     private String  nearNpc        = null;
     private boolean dialogueStarted = false;
 
     public WorldScreen(ValmerionGame game) {
         super(game);
+        touchControls = new TouchControls();
         font       = assets.font(AssetLoader.FONT_MAIN);
         background = assets.texture(AssetLoader.TEX_WORLD_ARTARTEL);
         zakTex     = assets.texture(AssetLoader.TEX_NPC_ZAK);
@@ -55,6 +58,7 @@ public class WorldScreen extends BaseScreen {
         HealthBar.setWhitePixel(whitePixel);
 
         player = new Player(assets, 150f, GROUND_Y);
+        player.setTouchControls(touchControls);
         player.unlockAll();
 
         dialogueOverlay = new DialogueOverlay(font);
@@ -73,6 +77,7 @@ public class WorldScreen extends BaseScreen {
     }
 
     private void update(float delta) {
+        touchControls.update();
         if (!dialogueOverlay.isActive()) {
             player.update(delta);
         }
@@ -164,6 +169,7 @@ public class WorldScreen extends BaseScreen {
                 20, 30);
         }
 
+        if (!dialogueOverlay.isActive()) touchControls.render(batch);
         dialogueOverlay.render(batch);
         batch.end();
     }

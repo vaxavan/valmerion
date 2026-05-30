@@ -1,5 +1,7 @@
 apply plugin: "java-library"
+apply plugin: "application"
 
+mainClassName = "com.valmerion.lwjgl3.Lwjgl3Launcher"
 sourceCompatibility = 17
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 
@@ -8,6 +10,12 @@ dependencies {
     api "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdxVersion"
     api "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
     api "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-desktop"
+}
+
+run {
+    workingDir = rootProject.file("assets")
+    ignoreExitValue = true
+    jvmArgs = ["-XstartOnFirstThread"]
 }
 
 jar {

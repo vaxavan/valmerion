@@ -15,7 +15,6 @@ dependencies {
 run {
     workingDir = rootProject.file("assets")
     ignoreExitValue = true
-    jvmArgs = ["-XstartOnFirstThread"]
 }
 
 jar {

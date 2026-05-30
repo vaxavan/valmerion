@@ -20,7 +20,7 @@ public class Lwjgl3Launcher {
         config.useVsync(true);
         config.setForegroundFPS(60);
         config.setWindowedMode(1280, 720);
-        config.setWindowIcon("textures/ui/icon.png");
+        try { config.setWindowIcon("textures/ui/icon.png"); } catch (Exception ignored) {}
         return config;
     }
 }

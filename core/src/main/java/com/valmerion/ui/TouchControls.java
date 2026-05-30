@@ -82,9 +82,6 @@ public class TouchControls {
     }
 
     public void update() {
-        // jumpJust/attackJust are set in touchDown listeners; clear them here after one frame
-        jumpJust   = false;
-        attackJust = false;
         stage.act(Gdx.graphics.getDeltaTime());
     }
 

@@ -30,7 +30,6 @@ public class TouchControls {
     // Jump / Attack state
     private boolean jumpDown, attackDown;
     private boolean jumpJust, attackJust;
-    private boolean prevJump, prevAttack;
 
     public TouchControls() {
         stage = new Stage(new ScreenViewport());
@@ -58,7 +57,7 @@ public class TouchControls {
         jumpBtn.setBounds(sw - 280, 20, 120, 120);
         jumpBtn.addListener(new ClickListener() {
             @Override public boolean touchDown(InputEvent e, float x, float y, int ptr, int btn2) {
-                jumpDown = true; return true;
+                jumpJust = true; jumpDown = true; return true;
             }
             @Override public void touchUp(InputEvent e, float x, float y, int ptr, int btn2) {
                 jumpDown = false;
@@ -73,7 +72,7 @@ public class TouchControls {
         atkBtn.setBounds(sw - 160, 160, 120, 120);
         atkBtn.addListener(new ClickListener() {
             @Override public boolean touchDown(InputEvent e, float x, float y, int ptr, int btn2) {
-                attackDown = true; return true;
+                attackJust = true; attackDown = true; return true;
             }
             @Override public void touchUp(InputEvent e, float x, float y, int ptr, int btn2) {
                 attackDown = false;
@@ -83,11 +82,10 @@ public class TouchControls {
     }
 
     public void update() {
-        prevJump   = jumpDown;
-        prevAttack = attackDown;
+        // jumpJust/attackJust are set in touchDown listeners; clear them here after one frame
+        jumpJust   = false;
+        attackJust = false;
         stage.act(Gdx.graphics.getDeltaTime());
-        jumpJust   = jumpDown   && !prevJump;
-        attackJust = attackDown && !prevAttack;
     }
 
     /** -1=left  0=still  +1=right */
@@ -98,8 +96,8 @@ public class TouchControls {
 
     public boolean isMoveLeft()          { return getHorizontal() < 0; }
     public boolean isMoveRight()         { return getHorizontal() > 0; }
-    public boolean isJumpJustPressed()   { return jumpJust; }
-    public boolean isAttackJustPressed() { return attackJust; }
+    public boolean isJumpJustPressed()   { boolean v = jumpJust;   jumpJust   = false; return v; }
+    public boolean isAttackJustPressed() { boolean v = attackJust; attackJust = false; return v; }
 
     /** Draw the Stage (Scene2D renders the touchpad automatically). */
     public void render(SpriteBatch batch) {

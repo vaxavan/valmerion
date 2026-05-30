@@ -78,8 +78,6 @@ public class AcademyScreen extends BaseScreen {
 
     public AcademyScreen(ValmerionGame game) {
         super(game);
-        touchControls = new TouchControls();
-
         // White pixel for HealthBar
         Pixmap pm = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
         pm.setColor(1, 1, 1, 1);
@@ -90,6 +88,7 @@ public class AcademyScreen extends BaseScreen {
 
         background  = assets.texture(AssetLoader.TEX_ACADEMY_BG);
         font        = assets.font(AssetLoader.FONT_MAIN);
+        touchControls = new TouchControls(font);
         hint        = new HintOverlay(font);
         playerHpBar = new HealthBar(20, Constants.WORLD_HEIGHT - 54, 220, 30, "HP");
         goblinHpBar = new HealthBar(Constants.WORLD_WIDTH - 240, Constants.WORLD_HEIGHT - 54, 220, 30, "Goblin");

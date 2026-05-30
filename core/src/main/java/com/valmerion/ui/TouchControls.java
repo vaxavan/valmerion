@@ -4,31 +4,23 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 /**
- * Virtual joystick + 2 buttons. All coordinates in screen percentages (0..1),
- * so it works on any resolution without viewport math.
+ * Dead-simple touch controls.
+ * Screen is split into zones — touch anywhere in a zone to act.
+ *
+ * Layout (screen fractions):
+ *   LEFT  zone  : x 0..0.25              → move left
+ *   RIGHT zone  : x 0.25..0.50           → move right
+ *   JUMP button : x 0.75..1.0, y 0..0.50 → jump
+ *   ATTACK btn  : x 0.75..1.0, y 0.50..1.0 → attack
  */
 public class TouchControls {
 
-    // joystick: left 20% of screen, bottom 30%
-    private static final float JS_CX = 0.12f;   // centre x  (% of screen width)
-    private static final float JS_CY = 0.20f;   // centre y  (% of screen height, 0=bottom)
-    private static final float JS_R  = 0.09f;   // radius    (% of screen width)
-
-    // buttons: right side, bottom 30%
-    private static final float JUMP_CX   = 0.84f;
-    private static final float JUMP_CY   = 0.16f;
-    private static final float ATTACK_CX = 0.93f;
-    private static final float ATTACK_CY = 0.28f;
-    private static final float BTN_R     = 0.065f;
-
-    private final Texture circle;
-
-    // knob offset in % of JS_R (-1..1)
-    private float knobDX = 0f;
-
+    private boolean moveLeft   = false;
+    private boolean moveRight  = false;
     private boolean jumpDown   = false;
     private boolean attackDown = false;
     private boolean jumpJust   = false;
@@ -36,16 +28,26 @@ public class TouchControls {
     private boolean prevJump   = false;
     private boolean prevAttack = false;
 
-    public TouchControls() {
-        circle = makeCircle(128);
+    private final Texture pixel;
+    private final BitmapFont font;
+
+    public TouchControls(BitmapFont font) {
+        this.font = font;
+        Pixmap pm = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+        pm.setColor(Color.WHITE);
+        pm.fill();
+        pixel = new Texture(pm);
+        pm.dispose();
     }
 
     public void update() {
         prevJump   = jumpDown;
         prevAttack = attackDown;
+
+        moveLeft   = false;
+        moveRight  = false;
         jumpDown   = false;
         attackDown = false;
-        knobDX     = 0f;
 
         int sw = Gdx.graphics.getWidth();
         int sh = Gdx.graphics.getHeight();
@@ -53,83 +55,62 @@ public class TouchControls {
         for (int i = 0; i < 5; i++) {
             if (!Gdx.input.isTouched(i)) continue;
 
-            // screen coords: x left→right, y top→bottom → flip y
-            float sx = Gdx.input.getX(i) / (float) sw;          // 0..1
-            float sy = 1f - Gdx.input.getY(i) / (float) sh;     // 0=bottom 1=top
+            // sx: 0=left 1=right,  sy: 0=top 1=bottom (LibGDX default)
+            float sx = Gdx.input.getX(i) / (float) sw;
+            float sy = Gdx.input.getY(i) / (float) sh;  // 0=top, 1=bottom
 
-            // joystick
-            float dx = sx - JS_CX;
-            float dy = sy - JS_CY;
-            float r  = (float) Math.sqrt(dx*dx + dy*dy);
-            if (r < JS_R * 2.5f) {
-                knobDX = Math.max(-1f, Math.min(1f, dx / JS_R));
-            }
-
-            // jump button
-            float jdx = sx - JUMP_CX, jdy = sy - JUMP_CY;
-            if (Math.sqrt(jdx*jdx + jdy*jdy) < BTN_R * 1.5f) jumpDown = true;
-
-            // attack button
-            float adx = sx - ATTACK_CX, ady = sy - ATTACK_CY;
-            if (Math.sqrt(adx*adx + ady*ady) < BTN_R * 1.5f) attackDown = true;
+            if (sx < 0.25f)              moveLeft  = true;
+            if (sx >= 0.25f && sx < 0.5f) moveRight = true;
+            if (sx >= 0.75f && sy >= 0.5f) jumpDown  = true;
+            if (sx >= 0.75f && sy <  0.5f) attackDown = true;
         }
 
         jumpJust   = jumpDown   && !prevJump;
         attackJust = attackDown && !prevAttack;
     }
 
-    /** -1=left  0=still  +1=right */
-    public float getHorizontal() { return Math.abs(knobDX) < 0.15f ? 0f : knobDX; }
+    public boolean isMoveLeft()          { return moveLeft; }
+    public boolean isMoveRight()         { return moveRight; }
     public boolean isJumpJustPressed()   { return jumpJust; }
     public boolean isAttackJustPressed() { return attackJust; }
 
-    /** Draw using game-world coordinates 0..1280 / 0..720. */
     public void render(SpriteBatch batch) {
-        int sw = Gdx.graphics.getBackBufferWidth();
-        int sh = Gdx.graphics.getBackBufferHeight();
+        float W = 1280f, H = 720f;
 
-        // We draw in a fixed 1280×720 game space, so convert % → game px
-        float gw = 1280f, gh = 720f;
+        // LEFT arrow zone
+        drawRect(batch, 0, 0, W * 0.25f, H * 0.35f,
+                 moveLeft ? new Color(1,1,1,0.25f) : new Color(1,1,1,0.10f));
 
-        float jsCX = JS_CX * gw;
-        float jsCY = JS_CY * gh;
-        float jsR  = JS_R  * gw;
-        float knR  = jsR * 0.5f;
-        float btnR = BTN_R * gw;
+        // RIGHT arrow zone
+        drawRect(batch, W * 0.25f, 0, W * 0.25f, H * 0.35f,
+                 moveRight ? new Color(1,1,1,0.25f) : new Color(1,1,1,0.10f));
 
-        // joystick base
-        batch.setColor(1, 1, 1, 0.30f);
-        batch.draw(circle, jsCX - jsR, jsCY - jsR, jsR*2, jsR*2);
+        // JUMP button (bottom-right)
+        drawRect(batch, W * 0.75f, 0, W * 0.25f, H * 0.35f,
+                 jumpDown ? new Color(0.2f,0.9f,0.2f,0.45f) : new Color(0.2f,0.9f,0.2f,0.20f));
 
-        // knob
-        batch.setColor(1, 1, 1, 0.70f);
-        float kx = jsCX + knobDX * jsR;
-        batch.draw(circle, kx - knR, jsCY - knR, knR*2, knR*2);
+        // ATTACK button (top of bottom-right)
+        drawRect(batch, W * 0.75f, H * 0.35f, W * 0.25f, H * 0.30f,
+                 attackDown ? new Color(0.9f,0.2f,0.2f,0.45f) : new Color(0.9f,0.2f,0.2f,0.20f));
 
-        // jump (green)
-        batch.setColor(jumpDown ? 0.4f : 0.2f, 0.9f, 0.3f, 0.80f);
-        float jBx = JUMP_CX * gw, jBy = JUMP_CY * gh;
-        batch.draw(circle, jBx - btnR, jBy - btnR, btnR*2, btnR*2);
-
-        // attack (red)
-        batch.setColor(0.9f, attackDown ? 0.6f : 0.2f, 0.2f, 0.80f);
-        float aBx = ATTACK_CX * gw, aBy = ATTACK_CY * gh;
-        batch.draw(circle, aBx - btnR, aBy - btnR, btnR*2, btnR*2);
-
-        batch.setColor(1, 1, 1, 1);
+        // Labels
+        if (font != null) {
+            font.setColor(1, 1, 1, 0.8f);
+            font.draw(batch, "◄",      W * 0.09f, H * 0.18f);
+            font.draw(batch, "►",      W * 0.34f, H * 0.18f);
+            font.draw(batch, "ПРЫЖОК", W * 0.80f, H * 0.18f);
+            font.draw(batch, "УДАР",   W * 0.80f, H * 0.58f);
+            font.setColor(Color.WHITE);
+        }
     }
 
-    public void dispose() { circle.dispose(); }
+    public void dispose() {
+        pixel.dispose();
+    }
 
-    private static Texture makeCircle(int size) {
-        Pixmap pm = new Pixmap(size, size, Pixmap.Format.RGBA8888);
-        pm.setColor(0, 0, 0, 0);
-        pm.fill();
-        int r = size / 2;
-        pm.setColor(1, 1, 1, 1);
-        pm.fillCircle(r, r, r - 1);
-        Texture t = new Texture(pm);
-        pm.dispose();
-        return t;
+    private void drawRect(SpriteBatch batch, float x, float y, float w, float h, Color c) {
+        batch.setColor(c);
+        batch.draw(pixel, x, y, w, h);
+        batch.setColor(Color.WHITE);
     }
 }

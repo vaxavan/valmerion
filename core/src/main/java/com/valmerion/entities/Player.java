@@ -164,16 +164,16 @@ public class Player extends Entity {
             cycleClass();
         }
 
-        // Horizontal movement — keyboard OR joystick
+        // Horizontal movement — keyboard OR touch zones
         float speed = playerClass.moveSpeed;
         velocity.x = 0;
         if (canMove) {
-            boolean leftKey  = Gdx.input.isKeyPressed(Keys.A) || Gdx.input.isKeyPressed(Keys.LEFT);
-            boolean rightKey = Gdx.input.isKeyPressed(Keys.D) || Gdx.input.isKeyPressed(Keys.RIGHT);
-            float touchH = (touchControls != null) ? touchControls.getHorizontal() : 0f;
-
-            if (leftKey  || touchH < -0.2f) { velocity.x = -speed; facingRight = false; }
-            if (rightKey || touchH >  0.2f) { velocity.x =  speed; facingRight = true;  }
+            boolean left  = Gdx.input.isKeyPressed(Keys.A) || Gdx.input.isKeyPressed(Keys.LEFT)
+                            || (touchControls != null && touchControls.isMoveLeft());
+            boolean right = Gdx.input.isKeyPressed(Keys.D) || Gdx.input.isKeyPressed(Keys.RIGHT)
+                            || (touchControls != null && touchControls.isMoveRight());
+            if (left)  { velocity.x = -speed; facingRight = false; }
+            if (right) { velocity.x =  speed; facingRight = true;  }
         }
 
         // Jump — keyboard OR touch button

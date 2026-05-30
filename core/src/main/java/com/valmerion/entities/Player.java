@@ -138,24 +138,24 @@ public class Player extends Entity {
         TextureRegion frame = animations.getCurrentFrame();
         if (frame == null) {
             drawPlaceholder(batch);
-            return;
-        }
+        } else {
 
         // Flash white when hit
-        if (hitFlashTimer > 0f) {
-            float t = (hitFlashTimer / 0.25f);
-            batch.setColor(1f, 1f - t * 0.6f, 1f - t * 0.6f, 1f);
-        }
+            if (hitFlashTimer > 0f) {
+                float t = (hitFlashTimer / 0.25f);
+                batch.setColor(1f, 1f - t * 0.6f, 1f - t * 0.6f, 1f);
+            }
 
-        float drawX = position.x + (HITBOX_W - DISPLAY_W) / 2f;
-        float drawY = position.y;
+            float drawX = position.x + (HITBOX_W - DISPLAY_W) / 2f;
+            float drawY = position.y;
 
-        if (!facingRight) {
-            batch.draw(frame, drawX + DISPLAY_W, drawY, -DISPLAY_W, DISPLAY_H);
-        } else {
-            batch.draw(frame, drawX, drawY, DISPLAY_W, DISPLAY_H);
+            if (!facingRight) {
+                batch.draw(frame, drawX + DISPLAY_W, drawY, -DISPLAY_W, DISPLAY_H);
+            } else {
+                batch.draw(frame, drawX, drawY, DISPLAY_W, DISPLAY_H);
+            }
+            batch.setColor(1f, 1f, 1f, 1f);
         }
-        batch.setColor(1f, 1f, 1f, 1f);
 
         for (Arrow a : arrows) a.render(batch);
     }

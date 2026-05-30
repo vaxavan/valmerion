@@ -24,11 +24,11 @@ import com.badlogic.gdx.graphics.g2d.freetype.FreetypeFontLoader.FreeTypeFontLoa
 public class AssetLoader {
 
     // ── Menu ──────────────────────────────────────────────────────────────────
-    public static final String TEX_MENU_BG           = "textures/menu/menu_bg.png";
+    public static final String TEX_MENU_BG           = "textures/menu/menu_background.jpg";
     public static final String TEX_BTN_NEW_GAME      = "textures/menu/btn_new_game.png";
-    public static final String TEX_BTN_NEW_GAME_HOV  = "textures/menu/btn_new_game_hover.png";
-    public static final String TEX_BTN_SETTINGS      = "textures/menu/btn_settings.png";
-    public static final String TEX_BTN_EXIT          = "textures/menu/btn_exit.png";
+    public static final String TEX_BTN_NEW_GAME_HOV  = "textures/menu/btn_new_game.png";   // нет hover — используем обычную
+    public static final String TEX_BTN_SETTINGS      = "textures/menu/btn_setting.jpg";
+    public static final String TEX_BTN_EXIT          = "textures/menu/btn_exit.jpg";
 
     // ── World / NPC ───────────────────────────────────────────────────────────
     public static final String TEX_WORLD_ARTARTEL    = "textures/world/artartel_bg.png";

@@ -37,7 +37,7 @@ public class AssetLoader {
     public static final String TEX_NPC_TENKAI        = "textures/characters/npc/tenkai.png";
 
     // ── Academy ───────────────────────────────────────────────────────────────
-    public static final String TEX_ACADEMY_BG        = "textures/academy/academy_bg.png";
+    public static final String TEX_ACADEMY_BG        = "textures/academy/bg_academy.png";
 
     // ── Cutscene slides ───────────────────────────────────────────────────────
     /** Dark forest — "darkness spreads across the kingdom" */

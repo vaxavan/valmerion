@@ -29,6 +29,7 @@ public class AssetLoader {
     public static final String TEX_BTN_NEW_GAME_HOV  = "textures/menu/btn_new_game.png";   // нет hover — используем обычную
     public static final String TEX_BTN_SETTINGS      = "textures/menu/btn_setting.jpg";
     public static final String TEX_BTN_EXIT          = "textures/menu/btn_exit.jpg";
+    public static final String TEX_BTN_CONTINUE      = "textures/menu/btn_continue.jpg";
 
     // ── World / NPC ───────────────────────────────────────────────────────────
     public static final String TEX_WORLD_ARTARTEL    = "textures/world/artartel_bg.png";
@@ -40,14 +41,13 @@ public class AssetLoader {
     public static final String TEX_ACADEMY_BG        = "textures/academy/bg_academy.png";
 
     // ── Cutscene slides ───────────────────────────────────────────────────────
-    /** Dark forest — "darkness spreads across the kingdom" */
-    public static final String SLIDE_01 = "textures/cutscene/slide_01.png";
-    /** Medieval city at night — "the kingdom of Valmerion" */
-    public static final String SLIDE_02 = "textures/cutscene/slide_02.png";
-    /** Cave/dungeon — "ancient evil awakens" */
-    public static final String SLIDE_03 = "textures/cutscene/slide_03.png";
-    /** Wizard's study — "the Academy awaits" */
-    public static final String SLIDE_04 = "textures/cutscene/slide_04.png";
+    public static final String SLIDE_01 = "textures/cutscene/bg_forest.png";
+    public static final String SLIDE_02 = "textures/cutscene/bg_plaza.png";
+    public static final String SLIDE_03 = "textures/cutscene/bg_zak_house.png";
+    public static final String SLIDE_04 = "textures/cutscene/bg_academy.png";
+
+    // ── Congratulatory / end screen ──────────────────────────────────────────
+    public static final String TEX_CONGRATS_BG = "textures/cutscene/bg_boss_arena.png";
 
     public static final String[] CUTSCENE_SLIDES = {
         SLIDE_01, SLIDE_02, SLIDE_03, SLIDE_04
@@ -90,11 +90,13 @@ public class AssetLoader {
         safeLoad(TEX_BTN_NEW_GAME_HOV, Texture.class);
         safeLoad(TEX_BTN_SETTINGS,     Texture.class);
         safeLoad(TEX_BTN_EXIT,         Texture.class);
+        safeLoad(TEX_BTN_CONTINUE,     Texture.class);
         safeLoad(TEX_WORLD_ARTARTEL,   Texture.class);
         safeLoad(TEX_NPC_ZAK,         Texture.class);
         safeLoad(TEX_NPC_HAZAN,       Texture.class);
         safeLoad(TEX_NPC_TENKAI,      Texture.class);
         safeLoad(TEX_ACADEMY_BG,      Texture.class);
+        safeLoad(TEX_CONGRATS_BG,     Texture.class);
 
         for (String slide : CUTSCENE_SLIDES) {
             safeLoad(slide, Texture.class);

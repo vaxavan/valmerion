@@ -22,9 +22,8 @@ public class HealthBar {
     // Shared pixel — set once from AcademyScreen
     private static com.badlogic.gdx.graphics.Texture whitePixel;
 
-    public static void setWhitePixel(com.badlogic.gdx.graphics.Texture t) {
-        whitePixel = t;
-    }
+    public static void setWhitePixel(com.badlogic.gdx.graphics.Texture t) { whitePixel = t; }
+    public static com.badlogic.gdx.graphics.Texture getWhitePixel()       { return whitePixel; }
 
     public HealthBar(float x, float y, float w, float h, String label) {
         this.x = x; this.y = y; this.width = w; this.height = h;

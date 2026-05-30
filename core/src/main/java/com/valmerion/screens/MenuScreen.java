@@ -8,31 +8,27 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.valmerion.ValmerionGame;
 import com.valmerion.assets.AssetLoader;
+import com.valmerion.game.GameState;
 import com.valmerion.ui.MenuButton;
 import com.valmerion.utils.Constants;
 
 /**
- * Main menu screen — background + 3 buttons (New Game, Settings, Exit).
- *
- * <p>Buttons are centred vertically with equal spacing.
- * Fade-in animation plays on entry.
+ * Main menu. Shows "Продолжить" button only if a game is already in progress.
  */
 public class MenuScreen extends BaseScreen {
 
-    // ── Layout ────────────────────────────────────────────────────────────────
     private static final float BTN_W   = 380f;
     private static final float BTN_H   = 95f;
-    private static final float BTN_GAP = 28f;
+    private static final float BTN_GAP = 22f;
 
+    private final MenuButton btnContinue;  // visible only when storyStage > 0
     private final MenuButton btnNewGame;
     private final MenuButton btnSettings;
     private final MenuButton btnExit;
 
-    // ── Visuals ───────────────────────────────────────────────────────────────
     private final Texture background;
     private float fadeAlpha = 0f;
 
-    // ── Audio ─────────────────────────────────────────────────────────────────
     private final Music music;
 
     public MenuScreen(ValmerionGame game) {
@@ -40,21 +36,22 @@ public class MenuScreen extends BaseScreen {
 
         background = assets.texture(AssetLoader.TEX_MENU_BG);
 
-        // Button textures (null-safe — MenuButton handles missing textures)
-        Texture tNew     = assets.texture(AssetLoader.TEX_BTN_NEW_GAME);
-        Texture tNewHov  = assets.texture(AssetLoader.TEX_BTN_NEW_GAME_HOV);
-        Texture tSet     = assets.texture(AssetLoader.TEX_BTN_SETTINGS);
-        Texture tExit    = assets.texture(AssetLoader.TEX_BTN_EXIT);
+        Texture tNew  = assets.texture(AssetLoader.TEX_BTN_NEW_GAME);
+        Texture tCont = assets.texture(AssetLoader.TEX_BTN_CONTINUE);
+        Texture tSet  = assets.texture(AssetLoader.TEX_BTN_SETTINGS);
+        Texture tExit = assets.texture(AssetLoader.TEX_BTN_EXIT);
 
-        float cx   = Constants.WORLD_WIDTH  / 2f - BTN_W / 2f;
-        float totalH = BTN_H * 3 + BTN_GAP * 2;
-        float baseY  = Constants.WORLD_HEIGHT / 2f - totalH / 2f - 40f; // slight downward offset
+        float cx = Constants.WORLD_WIDTH / 2f - BTN_W / 2f;
 
-        btnNewGame  = new MenuButton(tNew,  tNewHov, "New Game",  cx, baseY + (BTN_H + BTN_GAP) * 2, BTN_W, BTN_H);
-        btnSettings = new MenuButton(tSet,  null,    "Settings",  cx, baseY + (BTN_H + BTN_GAP),     BTN_W, BTN_H);
-        btnExit     = new MenuButton(tExit, null,    "Exit",       cx, baseY,                         BTN_W, BTN_H);
+        // 4 buttons max (Continue + New Game + Settings + Exit)
+        float totalH = BTN_H * 4 + BTN_GAP * 3;
+        float baseY  = Constants.WORLD_HEIGHT / 2f - totalH / 2f - 20f;
 
-        // Music
+        btnContinue = new MenuButton(tCont, null, "Продолжить", cx, baseY + (BTN_H + BTN_GAP) * 3, BTN_W, BTN_H);
+        btnNewGame  = new MenuButton(tNew,  null, "Новая игра", cx, baseY + (BTN_H + BTN_GAP) * 2, BTN_W, BTN_H);
+        btnSettings = new MenuButton(tSet,  null, "Настройки",  cx, baseY + (BTN_H + BTN_GAP),     BTN_W, BTN_H);
+        btnExit     = new MenuButton(tExit, null, "Выход",       cx, baseY,                         BTN_W, BTN_H);
+
         music = assets.music(AssetLoader.MUSIC_MENU);
         if (music != null) {
             music.setLooping(true);
@@ -63,12 +60,7 @@ public class MenuScreen extends BaseScreen {
         }
     }
 
-    // ── Screen lifecycle ──────────────────────────────────────────────────────
-
-    @Override
-    public void show() {
-        fadeAlpha = 0f;
-    }
+    @Override public void show() { fadeAlpha = 0f; }
 
     @Override
     public void render(float delta) {
@@ -76,32 +68,26 @@ public class MenuScreen extends BaseScreen {
 
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
         viewport.apply();
         batch.setProjectionMatrix(viewport.getCamera().combined);
         batch.begin();
 
-        // Background
         batch.setColor(fadeAlpha, fadeAlpha, fadeAlpha, 1f);
-        if (background != null) {
+        if (background != null)
             batch.draw(background, 0, 0, Constants.WORLD_WIDTH, Constants.WORLD_HEIGHT);
-        }
 
-        // Buttons
         batch.setColor(1f, 1f, 1f, fadeAlpha);
         if (fadeAlpha >= 0.5f) {
+            boolean hasSave = GameState.INSTANCE.storyStage > 0;
+            if (hasSave) btnContinue.render(batch, delta);
             btnNewGame .render(batch, delta);
             btnSettings.render(batch, delta);
             btnExit    .render(batch, delta);
         }
-
         batch.setColor(1f, 1f, 1f, 1f);
         batch.end();
 
-        // Handle clicks only after fade is mostly done
-        if (fadeAlpha >= 0.85f) {
-            handleInput();
-        }
+        if (fadeAlpha >= 0.85f) handleInput();
     }
 
     @Override
@@ -109,11 +95,25 @@ public class MenuScreen extends BaseScreen {
         if (music != null) music.stop();
     }
 
-    // ── Private ───────────────────────────────────────────────────────────────
-
     private void handleInput() {
+        boolean hasSave = GameState.INSTANCE.storyStage > 0;
+        if (hasSave && btnContinue.isJustClicked()) {
+            click();
+            if (music != null) music.stop();
+            // Resume from where player left off
+            int stage = GameState.INSTANCE.storyStage;
+            if (stage == 0) {
+                game.setScreen(new AcademyScreen(game));
+            } else {
+                game.setScreen(new WorldScreen(game));
+            }
+        }
         if (btnNewGame.isJustClicked()) {
             click();
+            GameState.INSTANCE.storyStage  = 0;
+            GameState.INSTANCE.reputation  = 0f;
+            GameState.INSTANCE.hunger      = 75f;
+            if (music != null) music.stop();
             game.setScreen(new CutsceneScreen(game));
         }
         if (btnSettings.isJustClicked()) {

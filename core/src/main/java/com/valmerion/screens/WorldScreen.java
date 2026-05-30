@@ -42,7 +42,7 @@ public class WorldScreen extends BaseScreen {
     public WorldScreen(ValmerionGame game) {
         super(game);
         font          = assets.font(AssetLoader.FONT_MAIN);
-        touchControls = new TouchControls(font);
+        touchControls = new TouchControls();
         background = assets.texture(AssetLoader.TEX_WORLD_ARTARTEL);
         zakTex     = assets.texture(AssetLoader.TEX_NPC_ZAK);
         tenkaiTex  = assets.texture(AssetLoader.TEX_NPC_TENKAI);

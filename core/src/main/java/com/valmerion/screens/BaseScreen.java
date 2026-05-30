@@ -6,6 +6,7 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.valmerion.ValmerionGame;
 import com.valmerion.assets.AssetLoader;
+import com.valmerion.ui.TouchControls;
 import com.valmerion.utils.Constants;
 
 /**
@@ -26,9 +27,12 @@ public abstract class BaseScreen implements Screen {
         this.viewport = new FitViewport(Constants.WORLD_WIDTH, Constants.WORLD_HEIGHT);
     }
 
+    protected TouchControls touchControls = null;  // set by subclass if needed
+
     @Override
     public void resize(int width, int height) {
         viewport.update(width, height, true);
+        if (touchControls != null) touchControls.resize(width, height);
     }
 
     @Override public void pause()  {}

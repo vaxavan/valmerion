@@ -4,150 +4,131 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Touchpad;
+import com.badlogic.gdx.scenes.scene2d.ui.Touchpad.TouchpadStyle;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
+/**
+ * Virtual controls using LibGDX Scene2D Touchpad.
+ * Touchpad handles all touch math internally — no manual coordinate conversion.
+ */
 public class TouchControls {
 
-    // Джойстик: центр фиксирован в левом нижнем углу
-    private static final float JS_X = 160f;  // в пикселях экрана
-    private static final float JS_Y_FROM_BOTTOM = 140f;
-    private static final float JS_R = 80f;   // радиус базы
+    private final Stage    stage;
+    private final Touchpad touchpad;
 
-    // Кнопки (пиксели экрана от правого/нижнего края)
-    private static final float BTN_R = 60f;
-    private static final float JUMP_RIGHT   = 160f;
-    private static final float JUMP_BOTTOM  = 80f;
-    private static final float ATK_RIGHT    = 60f;
-    private static final float ATK_BOTTOM   = 220f;
+    private final Texture baseTex;
+    private final Texture knobTex;
+    private final Texture btnTex;
 
-    private float knobX, knobY;   // текущее положение ручки джойстика (пиксели экрана)
-    private float jsBaseY;        // вычисляется в update по высоте экрана
-
+    // Jump / Attack state
     private boolean jumpDown, attackDown;
     private boolean jumpJust, attackJust;
     private boolean prevJump, prevAttack;
 
-    // горизонтальное смещение ручки (-1..1)
-    private float horizontal = 0f;
+    public TouchControls() {
+        stage = new Stage(new ScreenViewport());
+        Gdx.input.setInputProcessor(stage);
 
-    private final Texture circle;
-    private final BitmapFont font;
+        baseTex = makeCircle(200, new Color(1,1,1,0.25f));
+        knobTex = makeCircle(100, new Color(1,1,1,0.60f));
+        btnTex  = makeCircle(120, new Color(1,1,1,0.30f));
 
-    public TouchControls(BitmapFont font) {
-        this.font = font;
-        Pixmap pm = new Pixmap(256, 256, Pixmap.Format.RGBA8888);
-        pm.setColor(0, 0, 0, 0);
-        pm.fill();
-        pm.setColor(Color.WHITE);
-        pm.fillCircle(128, 128, 126);
-        circle = new Texture(pm);
-        pm.dispose();
+        // ── Touchpad ──────────────────────────────────────────────────────────
+        TouchpadStyle style = new TouchpadStyle();
+        style.background = new TextureRegionDrawable(new TextureRegion(baseTex));
+        style.knob       = new TextureRegionDrawable(new TextureRegion(knobTex));
+
+        touchpad = new Touchpad(15, style);
+        touchpad.setBounds(20, 20, 200, 200);
+        stage.addActor(touchpad);
+
+        // ── Jump button ───────────────────────────────────────────────────────
+        com.badlogic.gdx.scenes.scene2d.ui.Image jumpBtn =
+            new com.badlogic.gdx.scenes.scene2d.ui.Image(
+                new TextureRegionDrawable(new TextureRegion(makeCircle(120, new Color(0.2f,0.9f,0.2f,0.7f)))));
+        float sw = Gdx.graphics.getWidth();
+        float sh = Gdx.graphics.getHeight();
+        jumpBtn.setBounds(sw - 280, 20, 120, 120);
+        jumpBtn.addListener(new ClickListener() {
+            @Override public boolean touchDown(InputEvent e, float x, float y, int ptr, int btn2) {
+                jumpDown = true; return true;
+            }
+            @Override public void touchUp(InputEvent e, float x, float y, int ptr, int btn2) {
+                jumpDown = false;
+            }
+        });
+        stage.addActor(jumpBtn);
+
+        // ── Attack button ─────────────────────────────────────────────────────
+        com.badlogic.gdx.scenes.scene2d.ui.Image atkBtn =
+            new com.badlogic.gdx.scenes.scene2d.ui.Image(
+                new TextureRegionDrawable(new TextureRegion(makeCircle(120, new Color(0.9f,0.2f,0.2f,0.7f)))));
+        atkBtn.setBounds(sw - 160, 160, 120, 120);
+        atkBtn.addListener(new ClickListener() {
+            @Override public boolean touchDown(InputEvent e, float x, float y, int ptr, int btn2) {
+                attackDown = true; return true;
+            }
+            @Override public void touchUp(InputEvent e, float x, float y, int ptr, int btn2) {
+                attackDown = false;
+            }
+        });
+        stage.addActor(atkBtn);
     }
 
     public void update() {
         prevJump   = jumpDown;
         prevAttack = attackDown;
-        jumpDown   = false;
-        attackDown = false;
-        horizontal = 0f;
-
-        int sw = Gdx.graphics.getWidth();
-        int sh = Gdx.graphics.getHeight();
-
-        jsBaseY = sh - JS_Y_FROM_BOTTOM;  // y от верха (LibGDX: 0=top)
-
-        float jumpX = sw - JUMP_RIGHT;
-        float jumpY = sh - JUMP_BOTTOM;
-        float atkX  = sw - ATK_RIGHT;
-        float atkY  = sh - ATK_BOTTOM;
-
-        knobX = JS_X;
-        knobY = jsBaseY;
-
-        for (int i = 0; i < 5; i++) {
-            if (!Gdx.input.isTouched(i)) continue;
-
-            float tx = Gdx.input.getX(i);
-            float ty = Gdx.input.getY(i);  // 0 = top
-
-            // Джойстик: тач в левой половине экрана
-            if (tx < sw * 0.5f) {
-                float dx = tx - JS_X;
-                float dy = ty - jsBaseY;
-                float dist = (float) Math.sqrt(dx * dx + dy * dy);
-                if (dist > JS_R) {
-                    dx = dx / dist * JS_R;
-                    dy = dy / dist * JS_R;
-                }
-                knobX = JS_X + dx;
-                knobY = jsBaseY + dy;
-                horizontal = dx / JS_R;  // -1..1
-            }
-
-            // Прыжок
-            float djx = tx - jumpX, djy = ty - jumpY;
-            if (Math.sqrt(djx*djx + djy*djy) < BTN_R + 20) jumpDown = true;
-
-            // Атака
-            float dax = tx - atkX, day = ty - atkY;
-            if (Math.sqrt(dax*dax + day*day) < BTN_R + 20) attackDown = true;
-        }
-
+        stage.act(Gdx.graphics.getDeltaTime());
         jumpJust   = jumpDown   && !prevJump;
         attackJust = attackDown && !prevAttack;
     }
 
-    public float  getHorizontal()        { return Math.abs(horizontal) < 0.1f ? 0f : horizontal; }
+    /** -1=left  0=still  +1=right */
+    public float getHorizontal() {
+        float v = touchpad.getKnobPercentX();
+        return Math.abs(v) < 0.15f ? 0f : v;
+    }
+
     public boolean isMoveLeft()          { return getHorizontal() < 0; }
     public boolean isMoveRight()         { return getHorizontal() > 0; }
     public boolean isJumpJustPressed()   { return jumpJust; }
     public boolean isAttackJustPressed() { return attackJust; }
 
+    /** Draw the Stage (Scene2D renders the touchpad automatically). */
     public void render(SpriteBatch batch) {
-        // Переводим пиксели экрана в игровые координаты
-        int sw = Gdx.graphics.getWidth();
-        int sh = Gdx.graphics.getHeight();
-        float gw = 1280f, gh = 720f;
-        float sx = gw / sw, sy = gh / sh;
-
-        float gJsX    = JS_X * sx;
-        float gJsY    = (sh - jsBaseY) * sy;   // flip y: экранный top → игровой bottom
-        float gKnobX  = knobX * sx;
-        float gKnobY  = (sh - knobY) * sy;
-        float gJsR    = JS_R * sx;
-        float gKnR    = gJsR * 0.5f;
-        float gBtnR   = BTN_R * sx;
-
-        float gJumpX  = (sw - JUMP_RIGHT) * sx;
-        float gJumpY  = (sh - (sh - JUMP_BOTTOM)) * sy;
-        float gAtkX   = (sw - ATK_RIGHT)  * sx;
-        float gAtkY   = (sh - (sh - ATK_BOTTOM))  * sy;
-
-        // База джойстика
-        batch.setColor(1, 1, 1, 0.20f);
-        batch.draw(circle, gJsX - gJsR, gJsY - gJsR, gJsR*2, gJsR*2);
-        // Ручка
-        batch.setColor(1, 1, 1, 0.60f);
-        batch.draw(circle, gKnobX - gKnR, gKnobY - gKnR, gKnR*2, gKnR*2);
-
-        // Прыжок
-        batch.setColor(jumpDown ? 0.3f : 0.15f, jumpDown ? 1f : 0.8f, 0.2f, 0.75f);
-        batch.draw(circle, gJumpX - gBtnR, gJumpY - gBtnR, gBtnR*2, gBtnR*2);
-
-        // Атака
-        batch.setColor(jumpDown ? 1f : 0.8f, 0.2f, 0.2f, 0.75f);
-        batch.draw(circle, gAtkX - gBtnR, gAtkY - gBtnR, gBtnR*2, gBtnR*2);
-
-        batch.setColor(Color.WHITE);
-
-        if (font != null) {
-            font.setColor(1, 1, 1, 0.9f);
-            font.draw(batch, "↑ ПРЫЖОК", gJumpX - 38f, gJumpY - gBtnR - 8f);
-            font.draw(batch, "F УДАР",   gAtkX  - 28f, gAtkY  - gBtnR - 8f);
-            font.setColor(Color.WHITE);
-        }
+        batch.end();
+        stage.draw();
+        batch.begin();
     }
 
-    public void dispose() { circle.dispose(); }
+    public void resize(int w, int h) {
+        stage.getViewport().update(w, h, true);
+    }
+
+    public void dispose() {
+        stage.dispose();
+        baseTex.dispose();
+        knobTex.dispose();
+        btnTex.dispose();
+    }
+
+    // ── helpers ───────────────────────────────────────────────────────────────
+
+    private static Texture makeCircle(int size, Color color) {
+        Pixmap pm = new Pixmap(size, size, Pixmap.Format.RGBA8888);
+        pm.setColor(0, 0, 0, 0);
+        pm.fill();
+        pm.setColor(color);
+        pm.fillCircle(size / 2, size / 2, size / 2 - 2);
+        Texture t = new Texture(pm);
+        pm.dispose();
+        return t;
+    }
 }

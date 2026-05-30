@@ -88,7 +88,7 @@ public class AcademyScreen extends BaseScreen {
 
         background  = assets.texture(AssetLoader.TEX_ACADEMY_BG);
         font        = assets.font(AssetLoader.FONT_MAIN);
-        touchControls = new TouchControls(font);
+        touchControls = new TouchControls();
         hint        = new HintOverlay(font);
         playerHpBar = new HealthBar(20, Constants.WORLD_HEIGHT - 54, 220, 30, "HP");
         goblinHpBar = new HealthBar(Constants.WORLD_WIDTH - 240, Constants.WORLD_HEIGHT - 54, 220, 30, "Goblin");

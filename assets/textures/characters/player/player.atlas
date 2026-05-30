@@ -3,7 +3,6 @@ size: 384,1728
 format: RGBA8888
 filter: Linear,Linear
 repeat: none
-
 archer_idle_001
   rotate: false
   xy: 0, 0

@@ -203,7 +203,6 @@ def write_atlas(atlas_path, png_name, regions, sheet_w, sheet_h):
         "format: RGBA8888",
         "filter: Linear,Linear",
         "repeat: none",
-        "",
     ]
     for (name, x, y, w, h) in regions:
         lines += [

@@ -10,6 +10,8 @@ import com.valmerion.assets.AssetLoader;
 import com.valmerion.ui.TouchControls;
 import com.valmerion.utils.Constants;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Player-controlled hero.
@@ -47,6 +49,9 @@ public class Player extends Entity {
     private final Sound sndJump;
     private final Sound sndAttack;
 
+    // ── Arrows (archer) ──────────────────────────────────────────────────────
+    private final List<Arrow> arrows = new ArrayList<>();
+
     // ── Controls lock (tutorial) ──────────────────────────────────────────────
     private boolean canMove   = true;
     private boolean canJump   = false;
@@ -58,7 +63,7 @@ public class Player extends Entity {
     public void setTouchControls(TouchControls tc) { this.touchControls = tc; }
 
     public Player(AssetLoader assets, float x, float y) {
-        this(assets, x, y, PlayerClass.WARRIOR);
+        this(assets, x, y, PlayerClass.ARCHER);
     }
 
     public Player(AssetLoader assets, float x, float y, PlayerClass startClass) {
@@ -114,6 +119,9 @@ public class Player extends Entity {
         move(delta);
         updateAnimation(delta);
 
+        arrows.removeIf(a -> !a.isActive());
+        for (Arrow a : arrows) a.update(delta);
+
         hitFlashTimer = Math.max(0f, hitFlashTimer - delta);
     }
 
@@ -148,7 +156,11 @@ public class Player extends Entity {
             batch.draw(frame, drawX, drawY, DISPLAY_W, DISPLAY_H);
         }
         batch.setColor(1f, 1f, 1f, 1f);
+
+        for (Arrow a : arrows) a.render(batch);
     }
+
+    public List<Arrow> getArrows() { return arrows; }
 
     // ── Tutorial control locks ────────────────────────────────────────────────
 
@@ -204,6 +216,10 @@ public class Player extends Entity {
             attacking   = true;
             attackTimer = 0f;
             if (sndAttack != null) sndAttack.play(0.7f);
+            if (playerClass == PlayerClass.ARCHER) {
+                float arrowX = facingRight ? position.x + HITBOX_W : position.x;
+                arrows.add(new Arrow(arrowX, position.y, facingRight));
+            }
         }
 
         // Attack duration

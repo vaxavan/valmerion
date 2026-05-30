@@ -200,9 +200,19 @@ public class AcademyScreen extends BaseScreen {
 
     private void checkAttack() {
         if (goblin == null || !goblin.isAlive()) return;
+
+        // melee hitbox (warrior/mage)
         com.badlogic.gdx.math.Rectangle atk = player.getAttackHitbox();
         if (atk != null && atk.overlaps(goblin.getHitbox())) {
             goblin.takeDamage(Constants.PLAYER_ATTACK_DAMAGE);
+        }
+
+        // arrow projectiles (archer)
+        for (com.valmerion.entities.Arrow a : player.getArrows()) {
+            if (a.isActive() && a.getHitbox().overlaps(goblin.getHitbox())) {
+                goblin.takeDamage(Constants.PLAYER_ATTACK_DAMAGE);
+                a.deactivate();
+            }
         }
     }
 

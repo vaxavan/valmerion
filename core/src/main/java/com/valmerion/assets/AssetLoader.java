@@ -30,6 +30,12 @@ public class AssetLoader {
     public static final String TEX_BTN_SETTINGS      = "textures/menu/btn_settings.png";
     public static final String TEX_BTN_EXIT          = "textures/menu/btn_exit.png";
 
+    // ── World / NPC ───────────────────────────────────────────────────────────
+    public static final String TEX_WORLD_ARTARTEL    = "textures/world/artartel_bg.png";
+    public static final String TEX_NPC_ZAK           = "textures/characters/npc/zak.png";
+    public static final String TEX_NPC_HAZAN         = "textures/characters/npc/hazan.png";
+    public static final String TEX_NPC_TENKAI        = "textures/characters/npc/tenkai.png";
+
     // ── Academy ───────────────────────────────────────────────────────────────
     public static final String TEX_ACADEMY_BG        = "textures/academy/academy_bg.png";
 
@@ -84,7 +90,11 @@ public class AssetLoader {
         safeLoad(TEX_BTN_NEW_GAME_HOV, Texture.class);
         safeLoad(TEX_BTN_SETTINGS,     Texture.class);
         safeLoad(TEX_BTN_EXIT,         Texture.class);
-        safeLoad(TEX_ACADEMY_BG,       Texture.class);
+        safeLoad(TEX_WORLD_ARTARTEL,   Texture.class);
+        safeLoad(TEX_NPC_ZAK,         Texture.class);
+        safeLoad(TEX_NPC_HAZAN,       Texture.class);
+        safeLoad(TEX_NPC_TENKAI,      Texture.class);
+        safeLoad(TEX_ACADEMY_BG,      Texture.class);
 
         for (String slide : CUTSCENE_SLIDES) {
             safeLoad(slide, Texture.class);

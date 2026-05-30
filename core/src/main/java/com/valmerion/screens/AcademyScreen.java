@@ -166,7 +166,13 @@ public class AcademyScreen extends BaseScreen {
                 else if (!goblin.isAlive()) { goblin = null; enter(STAGE_CONGRATS); }
                 break;
             case STAGE_CONGRATS:
-                if (stageTimer > 2.0f) game.setScreen(new CongratulatoryScreen(game));
+                if (stageTimer > 2.0f) {
+                    if (com.valmerion.game.GameState.INSTANCE.storyStage == 0) {
+                        game.setScreen(new WorldScreen(game));
+                    } else {
+                        game.setScreen(new CongratulatoryScreen(game));
+                    }
+                }
                 break;
         }
     }

@@ -25,10 +25,10 @@ import com.valmerion.utils.Constants;
 public class CutsceneScreen extends BaseScreen {
 
     private static final String[] SUBTITLES = {
-        "Тьма поглощает земли Валмериона...",
-        "Некогда великое королевство гибнет...",
-        "Древнее зло пробудилось в глубинах...",
-        "Академия — твоя последняя надежда.",
+        "Когда вселенная Valmerion только родилась, появились три брата-бога...",
+        "Элиофан — свет. Эребарх — тьма. Они развязали войну, уничтожая всё живое.",
+        "Эон — бог времени — решил запечатать братьев. Но ему нужен был избранный...",
+        "...Тот, кто стоит между крайностями. Способный остановить войну. Ты."
     };
 
     private static final float SLIDE_HOLD    = Constants.CUTSCENE_SLIDE_DURATION;
@@ -111,7 +111,7 @@ public class CutsceneScreen extends BaseScreen {
         if (Gdx.input.isKeyJustPressed(Keys.SPACE)
                 || Gdx.input.isKeyJustPressed(Keys.ENTER)
                 || Gdx.input.justTouched()) {
-            game.setScreen(new AcademyScreen(game));
+            game.setScreen(new WorldScreen(game));
         }
     }
 
@@ -126,7 +126,7 @@ public class CutsceneScreen extends BaseScreen {
         alpha     = 0f;
         fadingOut = false;
         if (index >= slides.length) {
-            game.setScreen(new AcademyScreen(game));
+            game.setScreen(new WorldScreen(game));
         }
     }
 }

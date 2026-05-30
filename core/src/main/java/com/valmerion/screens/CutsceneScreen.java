@@ -111,7 +111,7 @@ public class CutsceneScreen extends BaseScreen {
         if (Gdx.input.isKeyJustPressed(Keys.SPACE)
                 || Gdx.input.isKeyJustPressed(Keys.ENTER)
                 || Gdx.input.justTouched()) {
-            game.setScreen(new WorldScreen(game));
+            game.setScreen(new AcademyScreen(game));
         }
     }
 
@@ -126,7 +126,7 @@ public class CutsceneScreen extends BaseScreen {
         alpha     = 0f;
         fadingOut = false;
         if (index >= slides.length) {
-            game.setScreen(new WorldScreen(game));
+            game.setScreen(new AcademyScreen(game));
         }
     }
 }

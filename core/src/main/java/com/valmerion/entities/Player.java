@@ -33,6 +33,7 @@ public class Player extends Entity {
     private PlayerClass  playerClass;
     private AnimationSet animations;
     private final TextureAtlas atlas;
+    private com.badlogic.gdx.graphics.Texture placeholder;
 
     // ── State flags ───────────────────────────────────────────────────────────
     private boolean onGround     = false;
@@ -66,6 +67,17 @@ public class Player extends Entity {
         this.atlas       = assets.atlas(AssetLoader.ATLAS_PLAYER);
         this.playerClass = startClass;
         this.animations  = new AnimationSet(atlas, startClass.prefix);
+
+        // Чёрный квадрат — заглушка пока нет реального спрайта
+        com.badlogic.gdx.graphics.Pixmap pm =
+            new com.badlogic.gdx.graphics.Pixmap((int)DISPLAY_W, (int)DISPLAY_H,
+                com.badlogic.gdx.graphics.Pixmap.Format.RGBA8888);
+        pm.setColor(com.badlogic.gdx.graphics.Color.BLACK);
+        pm.fill();
+        pm.setColor(com.badlogic.gdx.graphics.Color.WHITE);
+        pm.drawRectangle(0, 0, (int)DISPLAY_W, (int)DISPLAY_H);
+        placeholder = new com.badlogic.gdx.graphics.Texture(pm);
+        pm.dispose();
 
         sndJump   = assets.sound(AssetLoader.SFX_JUMP);
         sndAttack = assets.sound(AssetLoader.SFX_ATTACK);
@@ -243,10 +255,12 @@ public class Player extends Entity {
     }
 
     private void drawPlaceholder(SpriteBatch batch) {
-        // Magenta rectangle as fallback when atlas is missing
-        batch.setColor(1f, 0f, 1f, 1f);
-        // Just draw a unit square placeholder via batch color — we'd need
-        // a pixel texture to truly fill, so we just reset and skip.
-        batch.setColor(1f, 1f, 1f, 1f);
+        if (placeholder == null) return;
+        float drawX = position.x + (HITBOX_W - DISPLAY_W) / 2f;
+        if (!facingRight) {
+            batch.draw(placeholder, drawX + DISPLAY_W, position.y, -DISPLAY_W, DISPLAY_H);
+        } else {
+            batch.draw(placeholder, drawX, position.y, DISPLAY_W, DISPLAY_H);
+        }
     }
 }

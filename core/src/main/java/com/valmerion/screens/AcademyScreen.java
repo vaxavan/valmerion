@@ -132,7 +132,7 @@ public class AcademyScreen extends BaseScreen {
     // ── Update ────────────────────────────────────────────────────────────────
 
     private void update(float delta) {
-        touchControls.update(viewport);
+        touchControls.update();
         stageTimer += delta;
         player.update(delta);
 

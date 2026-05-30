@@ -5,158 +5,141 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.viewport.Viewport;
 
 /**
  * On-screen virtual controls: left joystick + Jump/Attack buttons.
- * Works with both touch (mobile) and mouse (desktop testing).
+ * Works with both touch (mobile) and mouse click (desktop).
  */
 public class TouchControls {
 
-    // Joystick
-    private static final float JS_BASE_X  = 120f;
-    private static final float JS_BASE_Y  = 110f;
-    private static final float JS_RADIUS  = 70f;
-    private static final float KNOB_R     = 35f;
+    // Joystick centre position in game-world coords
+    private static final float JS_X = 130f;
+    private static final float JS_Y = 120f;
+    private static final float JS_R = 70f;   // base radius
+    private static final float KN_R = 35f;   // knob radius
 
-    // Buttons (bottom-right)
-    private static final float BTN_JUMP_X   = 1100f;
-    private static final float BTN_JUMP_Y   = 60f;
-    private static final float BTN_ATTACK_X = 1200f;
-    private static final float BTN_ATTACK_Y = 130f;
-    private static final float BTN_R        = 50f;
+    // Button centres in game-world coords
+    private static final float JUMP_X   = 1120f;
+    private static final float JUMP_Y   = 90f;
+    private static final float ATTACK_X = 1210f;
+    private static final float ATTACK_Y = 160f;
+    private static final float BTN_R    = 52f;
 
-    // Textures
-    private final Texture baseCircle;
-    private final Texture knobCircle;
-    private final Texture btnCircle;
+    private final Texture baseTex;
+    private final Texture knobTex;
+    private final Texture btnTex;
 
-    // State
-    private float knobX = JS_BASE_X;
-    private float knobY = JS_BASE_Y;
+    // Knob position (follows finger)
+    private float knobX = JS_X;
+    private float knobY = JS_Y;
+
     private boolean jumpPressed    = false;
     private boolean attackPressed  = false;
     private boolean jumpJustPressed   = false;
     private boolean attackJustPressed = false;
 
-    // Touch pointer IDs
-    private int jsPointer     = -1;
-    private int jumpPointer   = -1;
-    private int attackPointer = -1;
-
-    // Previous frame state
     private boolean prevJump   = false;
     private boolean prevAttack = false;
 
+    private final Vector3 tmp = new Vector3();
+
     public TouchControls() {
-        baseCircle = makeCircle((int)(JS_RADIUS * 2), new Color(1,1,1,0.25f), new Color(1,1,1,0.5f));
-        knobCircle = makeCircle((int)(KNOB_R * 2),    new Color(1,1,1,0.6f), new Color(1,1,1,0.9f));
-        btnCircle  = makeCircle((int)(BTN_R * 2),     new Color(0.2f,0.6f,1f,0.5f), new Color(0.4f,0.8f,1f,0.9f));
+        baseTex = circle((int)(JS_R * 2), new Color(1,1,1,0.20f), new Color(1,1,1,0.45f));
+        knobTex = circle((int)(KN_R * 2), new Color(1,1,1,0.55f), new Color(1,1,1,0.85f));
+        btnTex  = circle((int)(BTN_R * 2), new Color(0,0,0,0.01f), new Color(1,1,1,0.7f));
     }
 
-    public void update() {
+    /**
+     * Call once per frame BEFORE reading input.
+     * Viewport is used to convert screen pixels → game world coords.
+     */
+    public void update(Viewport viewport) {
         prevJump   = jumpPressed;
         prevAttack = attackPressed;
-
         jumpPressed   = false;
         attackPressed = false;
-        knobX = JS_BASE_X;
-        knobY = JS_BASE_Y;
+        knobX = JS_X;
+        knobY = JS_Y;
 
-        int pointers = Gdx.input.isTouched() ? 10 : 0;
-
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 5; i++) {
             if (!Gdx.input.isTouched(i)) continue;
 
-            // LibGDX y is flipped (0 = top)
-            float tx = Gdx.input.getX(i) * (1280f / Gdx.graphics.getWidth());
-            float ty = (Gdx.graphics.getHeight() - Gdx.input.getY(i))
-                       * (720f / Gdx.graphics.getHeight());
+            // Convert screen → world
+            tmp.set(Gdx.input.getX(i), Gdx.input.getY(i), 0);
+            viewport.unproject(tmp);
+            float wx = tmp.x;
+            float wy = tmp.y;
 
-            // Joystick zone: left half, bottom 250px
-            if (tx < 640f && ty < 250f) {
-                jsPointer = i;
-                float dx = tx - JS_BASE_X;
-                float dy = ty - JS_BASE_Y;
-                float dist = (float) Math.sqrt(dx * dx + dy * dy);
-                if (dist > JS_RADIUS) {
-                    dx = dx / dist * JS_RADIUS;
-                    dy = dy / dist * JS_RADIUS;
-                }
-                knobX = JS_BASE_X + dx;
-                knobY = JS_BASE_Y + dy;
+            // Joystick: touch is within 2× base radius of joystick centre
+            float djx = wx - JS_X;
+            float djy = wy - JS_Y;
+            if (Math.sqrt(djx*djx + djy*djy) < JS_R * 2.5f) {
+                float dist = (float) Math.sqrt(djx*djx + djy*djy);
+                if (dist > JS_R) { djx = djx/dist*JS_R; djy = djy/dist*JS_R; }
+                knobX = JS_X + djx;
+                knobY = JS_Y + djy;
             }
 
             // Jump button
-            float djx = tx - (BTN_JUMP_X + BTN_R);
-            float djy = ty - (BTN_JUMP_Y + BTN_R);
-            if (Math.sqrt(djx*djx + djy*djy) < BTN_R + 20) {
-                jumpPressed = true;
-            }
+            float jdx = wx - JUMP_X, jdy = wy - JUMP_Y;
+            if (Math.sqrt(jdx*jdx + jdy*jdy) < BTN_R + 15) jumpPressed = true;
 
             // Attack button
-            float dax = tx - (BTN_ATTACK_X + BTN_R);
-            float day = ty - (BTN_ATTACK_Y + BTN_R);
-            if (Math.sqrt(dax*dax + day*day) < BTN_R + 20) {
-                attackPressed = true;
-            }
+            float adx = wx - ATTACK_X, ady = wy - ATTACK_Y;
+            if (Math.sqrt(adx*adx + ady*ady) < BTN_R + 15) attackPressed = true;
         }
 
         jumpJustPressed   = jumpPressed   && !prevJump;
         attackJustPressed = attackPressed && !prevAttack;
     }
 
-    /** -1 = left, 0 = still, 1 = right */
+    /** -1.0 = full left, 0 = centre, +1.0 = full right */
     public float getHorizontal() {
-        float dx = knobX - JS_BASE_X;
-        if (Math.abs(dx) < 10f) return 0f;
-        return dx / JS_RADIUS;
+        float dx = knobX - JS_X;
+        return Math.abs(dx) < 8f ? 0f : dx / JS_R;
     }
 
     public boolean isJumpJustPressed()   { return jumpJustPressed; }
     public boolean isAttackJustPressed() { return attackJustPressed; }
-    public boolean isJumpHeld()          { return jumpPressed; }
 
     public void render(SpriteBatch batch) {
+        batch.setColor(1, 1, 1, 1);
         // Joystick base
-        batch.setColor(1,1,1,1);
-        batch.draw(baseCircle, JS_BASE_X - JS_RADIUS, JS_BASE_Y - JS_RADIUS,
-                   JS_RADIUS*2, JS_RADIUS*2);
+        batch.draw(baseTex, JS_X - JS_R, JS_Y - JS_R, JS_R*2, JS_R*2);
         // Knob
-        batch.draw(knobCircle, knobX - KNOB_R, knobY - KNOB_R,
-                   KNOB_R*2, KNOB_R*2);
+        batch.draw(knobTex, knobX - KN_R, knobY - KN_R, KN_R*2, KN_R*2);
 
-        // Jump button
-        batch.setColor(0.3f, 0.8f, 0.3f, 0.8f);
-        batch.draw(btnCircle, BTN_JUMP_X, BTN_JUMP_Y, BTN_R*2, BTN_R*2);
+        // Jump (green)
+        batch.setColor(0.25f, 0.85f, 0.25f, 0.85f);
+        batch.draw(btnTex, JUMP_X - BTN_R, JUMP_Y - BTN_R, BTN_R*2, BTN_R*2);
 
-        // Attack button
-        batch.setColor(0.9f, 0.3f, 0.3f, 0.8f);
-        batch.draw(btnCircle, BTN_ATTACK_X, BTN_ATTACK_Y, BTN_R*2, BTN_R*2);
+        // Attack (red)
+        batch.setColor(0.9f, 0.25f, 0.25f, 0.85f);
+        batch.draw(btnTex, ATTACK_X - BTN_R, ATTACK_Y - BTN_R, BTN_R*2, BTN_R*2);
 
-        batch.setColor(1,1,1,1);
+        batch.setColor(1, 1, 1, 1);
     }
 
     public void dispose() {
-        baseCircle.dispose();
-        knobCircle.dispose();
-        btnCircle.dispose();
+        baseTex.dispose();
+        knobTex.dispose();
+        btnTex.dispose();
     }
 
-    // ── helpers ───────────────────────────────────────────────────────────────
-
-    private static Texture makeCircle(int size, Color fill, Color border) {
+    private static Texture circle(int size, Color fill, Color edge) {
         Pixmap pm = new Pixmap(size, size, Pixmap.Format.RGBA8888);
-        pm.setColor(0,0,0,0);
+        pm.setColor(0, 0, 0, 0);
         pm.fill();
         int r = size / 2;
         pm.setColor(fill);
         pm.fillCircle(r, r, r - 2);
-        pm.setColor(border);
-        for (int t = 0; t < 3; t++) {
-            pm.drawCircle(r, r, r - t);
-        }
-        Texture tex = new Texture(pm);
+        pm.setColor(edge);
+        pm.drawCircle(r, r, r - 1);
+        pm.drawCircle(r, r, r - 2);
+        Texture t = new Texture(pm);
         pm.dispose();
-        return tex;
+        return t;
     }
 }

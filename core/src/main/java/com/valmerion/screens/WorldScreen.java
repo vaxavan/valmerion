@@ -77,7 +77,7 @@ public class WorldScreen extends BaseScreen {
     }
 
     private void update(float delta) {
-        touchControls.update();
+        touchControls.update(viewport);
         if (!dialogueOverlay.isActive()) {
             player.update(delta);
         }

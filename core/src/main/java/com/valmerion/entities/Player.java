@@ -226,7 +226,7 @@ public class Player extends Entity {
             if (sndAttack != null) sndAttack.play(0.7f);
             if (playerClass == PlayerClass.ARCHER) {
                 float arrowX = facingRight ? position.x + HITBOX_W : position.x;
-                float arrowY = position.y + HITBOX_H * 0.60f;
+                float arrowY = position.y + DISPLAY_H * displayScale * 0.55f;
                 arrows.add(new Arrow(arrowX, arrowY, facingRight));
             }
         }

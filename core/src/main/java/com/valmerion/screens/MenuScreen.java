@@ -75,14 +75,14 @@ public class MenuScreen extends BaseScreen {
         batch.begin();
 
         // Background (slightly dimmed)
-        batch.setColor(fadeAlpha * 0.75f, fadeAlpha * 0.75f, fadeAlpha * 0.75f, 1f);
+        batch.setColor(fadeAlpha, fadeAlpha, fadeAlpha, 1f);
         if (background != null)
             batch.draw(background, 0, 0, Constants.WORLD_WIDTH, Constants.WORLD_HEIGHT);
 
         // Dark overlay for readability
         Texture px = HealthBar.getWhitePixel();
         if (px != null) {
-            batch.setColor(0f, 0f, 0f, fadeAlpha * 0.45f);
+            batch.setColor(0f, 0f, 0f, fadeAlpha * 0.25f);
             batch.draw(px, 0, 0, Constants.WORLD_WIDTH, Constants.WORLD_HEIGHT);
         }
 

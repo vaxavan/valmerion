@@ -1,6 +1,7 @@
 package com.valmerion.screens;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -8,7 +9,6 @@ import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.valmerion.ValmerionGame;
 import com.valmerion.assets.AssetLoader;
 import com.valmerion.ui.HealthBar;
-import com.valmerion.ui.MenuButton;
 import com.valmerion.utils.Constants;
 
 /**
@@ -44,23 +44,22 @@ public class CutsceneScreen extends BaseScreen {
     private boolean fadingOut = false;
 
     // ── UI ────────────────────────────────────────────────────────────────────
+    private static final float SKIP_X = Constants.WORLD_WIDTH  - 80f;
+    private static final float SKIP_Y = Constants.WORLD_HEIGHT - 52f;
+    private static final float SKIP_W = 68f;
+    private static final float SKIP_H = 40f;
+
     private final BitmapFont  font;
     private final GlyphLayout layout = new GlyphLayout();
-    private final MenuButton  btnSkip;
 
     public CutsceneScreen(ValmerionGame game) {
         super(game);
         font = assets.font(AssetLoader.FONT_MAIN);
-        MenuButton.setFont(font);
 
-        // White pixel for button
         com.badlogic.gdx.graphics.Pixmap pm = new com.badlogic.gdx.graphics.Pixmap(1,1,com.badlogic.gdx.graphics.Pixmap.Format.RGBA8888);
         pm.setColor(1,1,1,1); pm.fill();
         HealthBar.setWhitePixel(new com.badlogic.gdx.graphics.Texture(pm));
         pm.dispose();
-
-        btnSkip = new MenuButton(null, null, "Пропустить  ›",
-            Constants.WORLD_WIDTH - 230f, 20f, 210f, 55f);
 
         slides = new Texture[AssetLoader.CUTSCENE_SLIDES.length];
         for (int i = 0; i < slides.length; i++) {
@@ -116,14 +115,35 @@ public class CutsceneScreen extends BaseScreen {
             font.setColor(1, 1, 1, 1);
         }
 
-        // Skip button
-        btnSkip.render(batch, 0);
+        // Small ">>" skip button — top-right, subtle
+        com.badlogic.gdx.graphics.Texture px = HealthBar.getWhitePixel();
+        if (px != null) {
+            batch.setColor(0f, 0f, 0f, 0.45f);
+            batch.draw(px, SKIP_X, SKIP_Y, SKIP_W, SKIP_H);
+            batch.setColor(0.6f, 0.55f, 0.3f, 0.8f);
+            batch.draw(px, SKIP_X, SKIP_Y,          SKIP_W, 1.5f);
+            batch.draw(px, SKIP_X, SKIP_Y+SKIP_H-1, SKIP_W, 1.5f);
+            batch.setColor(Color.WHITE);
+        }
+        if (font != null) {
+            layout.setText(font, "»");
+            font.setColor(0.8f, 0.72f, 0.35f, 0.85f);
+            font.draw(batch, "»", SKIP_X + (SKIP_W - layout.width) / 2f,
+                      SKIP_Y + (SKIP_H + layout.height) / 2f);
+            font.setColor(Color.WHITE);
+        }
 
         batch.setColor(1, 1, 1, 1);
         batch.end();
 
-        if (btnSkip.isJustClicked()) {
-            game.setScreen(new AcademyScreen(game));
+        // Check skip tap
+        if (Gdx.input.justTouched()) {
+            float wx = Gdx.input.getX() * Constants.WORLD_WIDTH  / Gdx.graphics.getWidth();
+            float wy = (Gdx.graphics.getHeight() - Gdx.input.getY())
+                     * Constants.WORLD_HEIGHT / Gdx.graphics.getHeight();
+            if (wx >= SKIP_X && wx <= SKIP_X + SKIP_W && wy >= SKIP_Y && wy <= SKIP_Y + SKIP_H) {
+                game.setScreen(new AcademyScreen(game));
+            }
         }
     }
 

@@ -182,6 +182,7 @@ public class AcademyScreen extends BaseScreen {
             case STAGE_CONGRATS:
                 if (stageTimer > 2.5f) {
                     if (music != null) music.stop();
+                    GameState.INSTANCE.storyStage = 2;
                     game.setScreen(new WorldScreen(game));
                 }
                 break;

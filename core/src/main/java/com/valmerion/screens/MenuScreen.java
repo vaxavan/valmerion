@@ -93,8 +93,7 @@ public class MenuScreen extends BaseScreen {
 
         // Buttons (show when faded in)
         if (fadeAlpha >= 0.5f) {
-            boolean hasSave = GameState.INSTANCE.storyStage > 0;
-            if (hasSave) btnContinue.render(batch, delta);
+            if (GameState.INSTANCE.gameStarted) btnContinue.render(batch, delta);
             btnNewGame.render(batch, delta);
             btnExit   .render(batch, delta);
         }
@@ -154,7 +153,9 @@ public class MenuScreen extends BaseScreen {
     }
 
     private void handleInput() {
-        boolean hasSave = GameState.INSTANCE.storyStage > 0;
+        // hasSave: player has started a game (class chosen = visited ClassSelectionScreen)
+        // selectedClass starts as "archer" (default) — use a sentinel to detect "never started"
+        boolean hasSave = GameState.INSTANCE.gameStarted;
         if (hasSave && btnContinue.isJustClicked()) {
             click();
             if (music != null) music.stop();
@@ -168,6 +169,7 @@ public class MenuScreen extends BaseScreen {
             GameState.INSTANCE.reputation    = 0f;
             GameState.INSTANCE.hunger        = 75f;
             GameState.INSTANCE.selectedClass = "archer";
+            GameState.INSTANCE.gameStarted   = false;
             if (music != null) music.stop();
             game.setScreen(new CutsceneScreen(game));
         }

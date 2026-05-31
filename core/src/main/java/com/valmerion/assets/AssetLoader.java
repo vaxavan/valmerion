@@ -154,10 +154,15 @@ public class AssetLoader {
             return;
         }
         FreeTypeFontLoaderParameter p = new FreeTypeFontLoaderParameter();
-        p.fontFileName            = fontPath;
-        p.fontParameters.size     = size;
+        p.fontFileName             = fontPath;
+        p.fontParameters.size      = size;
         p.fontParameters.minFilter = TextureFilter.Linear;
         p.fontParameters.magFilter = TextureFilter.Linear;
+        // Include full Latin + Cyrillic character set
+        p.fontParameters.characters =
+            com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.DEFAULT_CHARS
+            + "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя"
+            + "—…«»";
         manager.load(key, BitmapFont.class, p);
     }
 

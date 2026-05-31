@@ -65,7 +65,7 @@ public class WorldScreen extends BaseScreen {
         com.valmerion.entities.PlayerClass pClass = classFromState();
         player = new Player(assets, 150f, GROUND_Y, pClass);
         player.setTouchControls(touchControls);
-        player.setDisplayScale(1.3f);
+        player.setDisplayScale(1.5f);
         player.unlockAll();
 
         dialogueOverlay = new DialogueOverlay(font);

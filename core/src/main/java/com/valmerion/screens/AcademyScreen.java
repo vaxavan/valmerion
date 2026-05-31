@@ -211,12 +211,13 @@ public class AcademyScreen extends BaseScreen {
 
     private void checkAttack() {
         if (goblin == null || !goblin.isAlive()) return;
+        com.badlogic.gdx.math.Rectangle gBox = goblin.getVisualHitbox();
         com.badlogic.gdx.math.Rectangle atk = player.getAttackHitbox();
-        if (atk != null && atk.overlaps(goblin.getHitbox())) {
+        if (atk != null && atk.overlaps(gBox)) {
             goblin.takeDamage(Constants.PLAYER_ATTACK_DAMAGE);
         }
         for (com.valmerion.entities.Arrow a : player.getArrows()) {
-            if (a.isActive() && a.getHitbox().overlaps(goblin.getHitbox())) {
+            if (a.isActive() && a.getHitbox().overlaps(gBox)) {
                 goblin.takeDamage(Constants.PLAYER_ATTACK_DAMAGE);
                 a.deactivate();
             }

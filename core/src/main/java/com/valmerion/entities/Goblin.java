@@ -166,6 +166,14 @@ public class Goblin extends Entity {
         batch.setColor(1f, 1f, 1f, 1f);
     }
 
+    /** Returns the visual bounding box (accounts for displayScale). Use for hit detection. */
+    public com.badlogic.gdx.math.Rectangle getVisualHitbox() {
+        float dw   = DISPLAY_W * displayScale;
+        float dh   = DISPLAY_H * displayScale;
+        float drawX = position.x + (HITBOX_W - dw) / 2f;
+        return new com.badlogic.gdx.math.Rectangle(drawX, position.y, dw, dh);
+    }
+
     private void applyGravity(float delta) {
         velocity.y += GRAVITY * delta;
         position.y += velocity.y * delta;

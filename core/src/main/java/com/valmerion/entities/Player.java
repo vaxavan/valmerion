@@ -182,10 +182,12 @@ public class Player extends Entity {
     /** Returns the attack hitbox (in front of player). Null when not attacking. */
     public Rectangle getAttackHitbox() {
         if (!attacking) return null;
+        float range = Constants.PLAYER_ATTACK_RANGE * displayScale;
+        float h     = 60f * displayScale;
         float ax = facingRight
                 ? position.x + HITBOX_W
-                : position.x - Constants.PLAYER_ATTACK_RANGE;
-        return new Rectangle(ax, position.y + 10, Constants.PLAYER_ATTACK_RANGE, 60f);
+                : position.x - range;
+        return new Rectangle(ax, position.y + 10, range, h);
     }
 
     // ── Private ───────────────────────────────────────────────────────────────

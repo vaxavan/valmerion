@@ -146,13 +146,15 @@ public class Player extends Entity {
                 batch.setColor(1f, 1f - t * 0.6f, 1f - t * 0.6f, 1f);
             }
 
-            float drawX = position.x + (HITBOX_W - DISPLAY_W) / 2f;
+            float dw    = DISPLAY_W * displayScale;
+            float dh    = DISPLAY_H * displayScale;
+            float drawX = position.x + (HITBOX_W - dw) / 2f;
             float drawY = position.y;
 
             if (!facingRight) {
-                batch.draw(frame, drawX + DISPLAY_W, drawY, -DISPLAY_W, DISPLAY_H);
+                batch.draw(frame, drawX + dw, drawY, -dw, dh);
             } else {
-                batch.draw(frame, drawX, drawY, DISPLAY_W, DISPLAY_H);
+                batch.draw(frame, drawX, drawY, dw, dh);
             }
             batch.setColor(1f, 1f, 1f, 1f);
         }
@@ -272,11 +274,13 @@ public class Player extends Entity {
 
     private void drawPlaceholder(SpriteBatch batch) {
         if (placeholder == null) return;
-        float drawX = position.x + (HITBOX_W - DISPLAY_W) / 2f;
+        float dw    = DISPLAY_W * displayScale;
+        float dh    = DISPLAY_H * displayScale;
+        float drawX = position.x + (HITBOX_W - dw) / 2f;
         if (!facingRight) {
-            batch.draw(placeholder, drawX + DISPLAY_W, position.y, -DISPLAY_W, DISPLAY_H);
+            batch.draw(placeholder, drawX + dw, position.y, -dw, dh);
         } else {
-            batch.draw(placeholder, drawX, position.y, DISPLAY_W, DISPLAY_H);
+            batch.draw(placeholder, drawX, position.y, dw, dh);
         }
     }
 }

@@ -17,7 +17,8 @@ public abstract class Entity {
     protected float maxHp;
     protected float hp;
     protected boolean alive = true;
-    protected boolean facingRight = true;
+    protected boolean facingRight  = true;
+    protected float   displayScale = 1f;
 
     protected Entity(float x, float y, float w, float h, float maxHp) {
         position.set(x, y);
@@ -52,8 +53,11 @@ public abstract class Entity {
         hitbox.y = position.y;
     }
 
-    public Rectangle getHitbox()  { return hitbox; }
-    public Vector2   getPosition() { return position; }
-    public Vector2   getVelocity() { return velocity; }
+    public void setDisplayScale(float s) { displayScale = s; }
+    public float getDisplayScale()       { return displayScale; }
+
+    public Rectangle getHitbox()    { return hitbox; }
+    public Vector2   getPosition()  { return position; }
+    public Vector2   getVelocity()  { return velocity; }
     public boolean   isFacingRight() { return facingRight; }
 }

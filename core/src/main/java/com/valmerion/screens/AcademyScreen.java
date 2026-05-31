@@ -91,6 +91,7 @@ public class AcademyScreen extends BaseScreen {
 
         player   = new Player(assets, 150f, 160f);
         player.setTouchControls(touchControls);
+        player.setDisplayScale(2f);
         initPosX = player.getPosition().x;
 
         music = assets.music(AssetLoader.MUSIC_ACADEMY);
@@ -199,6 +200,7 @@ public class AcademyScreen extends BaseScreen {
 
     private void spawnGoblin(float x, Mode mode) {
         goblin = new Goblin(assets, x, 160f, mode);
+        goblin.setDisplayScale(2f);
         goblin.setAttackListener(dmg -> {
             if (goblin != null && goblin.isAlive()) player.takeDamage(dmg);
         });

@@ -135,11 +135,13 @@ public class Goblin extends Entity {
             batch.setColor(1f, 1f - t * 0.7f, 1f - t * 0.7f, 1f);
         }
 
-        float drawX = position.x + (HITBOX_W - DISPLAY_W) / 2f;
+        float dw    = DISPLAY_W * displayScale;
+        float dh    = DISPLAY_H * displayScale;
+        float drawX = position.x + (HITBOX_W - dw) / 2f;
         if (!facingRight) {
-            batch.draw(frame, drawX + DISPLAY_W, position.y, -DISPLAY_W, DISPLAY_H);
+            batch.draw(frame, drawX + dw, position.y, -dw, dh);
         } else {
-            batch.draw(frame, drawX, position.y, DISPLAY_W, DISPLAY_H);
+            batch.draw(frame, drawX, position.y, dw, dh);
         }
         batch.setColor(1f, 1f, 1f, 1f);
     }

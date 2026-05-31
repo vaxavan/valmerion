@@ -27,7 +27,7 @@ public final class Constants {
     public static final float GOBLIN_ATTACK_DAMAGE = 8f;
     public static final float GOBLIN_ATTACK_RANGE  = 55f;
     public static final float GOBLIN_ATTACK_COOLDOWN = 1.8f;
-    public static final float GOBLIN_AGGRO_RANGE   = 320f;
+    public static final float GOBLIN_AGGRO_RANGE   = 1500f;
 
     // ── Cutscene ──────────────────────────────────────────────────────────────
     public static final float CUTSCENE_SLIDE_DURATION = 4f;   // seconds per slide

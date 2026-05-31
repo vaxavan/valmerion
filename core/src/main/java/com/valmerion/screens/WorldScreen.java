@@ -110,6 +110,10 @@ public class WorldScreen extends BaseScreen {
         }
 
         int stage = GameState.INSTANCE.storyStage;
+        if (stage >= 3) {
+            game.setScreen(new CongratulatoryScreen(game));
+            return;
+        }
         nearNpc = null;
         if (stage == 0) {
             if (Math.abs(player.getPosition().x - ZAK_X) < NPC_INTERACT_DIST) nearNpc = "zak";

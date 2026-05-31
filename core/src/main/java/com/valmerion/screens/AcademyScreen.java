@@ -34,9 +34,9 @@ public class AcademyScreen extends BaseScreen {
 
     private static final String[] HINTS = {
         "Добро пожаловать в Академию Валмерион!",
-        "Нажимай  A / ←  или  D / →  для передвижения",
-        "Нажми  ПРОБЕЛ  чтобы прыгнуть",
-        "Нажми  F  или красную кнопку  чтобы атаковать",
+        "Используй джойстик чтобы двигаться",
+        "Нажми зелёную кнопку чтобы прыгнуть",
+        "Нажми красную кнопку чтобы атаковать",
         "Победи неподвижного гоблина!",
         "Осторожно — теперь гоблин атакует!",
         "Отличная работа! Обучение пройдено!"
@@ -243,7 +243,9 @@ public class AcademyScreen extends BaseScreen {
         hint.render(batch);
 
         if (font != null)
-            font.draw(batch, "Класс: " + player.getPlayerClass().displayName + "  [Tab — сменить]", 20, 30);
+            font.setColor(1f, 0.84f, 0.2f, 1f);
+            font.draw(batch, "Класс: " + player.getPlayerClass().displayName, 20, 30);
+            font.setColor(com.badlogic.gdx.graphics.Color.WHITE);
 
         if (!pause.isPaused()) touchControls.render(batch);
         pause.render(batch);

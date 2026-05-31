@@ -2,82 +2,76 @@ package com.valmerion.ui;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
 
 /**
- * Standard menu button — colored rectangle + text label centered on it.
- * Texture is drawn as background if provided, otherwise a solid color is used.
- * Always shows the label text on top regardless of texture.
+ * Black/transparent button with gold border and gold text.
+ * Works entirely by touch — no keyboard.
  */
 public class MenuButton {
 
-    private static final Color COLOR_NORMAL  = new Color(0.12f, 0.10f, 0.22f, 0.92f);
-    private static final Color COLOR_HOVER   = new Color(0.22f, 0.18f, 0.42f, 0.97f);
-    private static final Color COLOR_BORDER  = new Color(0.55f, 0.45f, 0.85f, 1f);
-    private static final Color COLOR_TEXT    = new Color(0.95f, 0.90f, 1.00f, 1f);
-    private static final Color COLOR_SHADOW  = new Color(0f, 0f, 0f, 0.7f);
+    // Gold palette
+    private static final Color GOLD        = new Color(1.00f, 0.84f, 0.20f, 1f);
+    private static final Color GOLD_DIM    = new Color(0.70f, 0.58f, 0.10f, 1f);
+    private static final Color BG_NORMAL   = new Color(0f,    0f,    0f,    0.65f);
+    private static final Color BG_HOVER    = new Color(0.10f, 0.08f, 0f,    0.82f);
 
-    private final Texture   texNormal;
     private final String    label;
     private final Rectangle bounds;
     private final GlyphLayout layout = new GlyphLayout();
 
-    private boolean hovered     = false;
     private boolean justClicked = false;
 
     private static BitmapFont sharedFont;
+    public  static void setFont(BitmapFont f) { sharedFont = f; }
 
-    public MenuButton(Texture texNormal, Texture texHover, String label,
+    public MenuButton(Object ignored1, Object ignored2, String label,
                       float x, float y, float w, float h) {
-        this.texNormal = texNormal;
-        this.label     = label;
-        this.bounds    = new Rectangle(x, y, w, h);
+        this.label  = label;
+        this.bounds = new Rectangle(x, y, w, h);
     }
 
-    public MenuButton(Texture texNormal, String label,
-                      float x, float y, float w, float h) {
-        this(texNormal, null, label, x, y, w, h);
+    public MenuButton(Object ignored, String label, float x, float y, float w, float h) {
+        this(null, null, label, x, y, w, h);
     }
 
     public void render(SpriteBatch batch, float delta) {
         justClicked = false;
-        updateInput();
+        boolean hovered = isHovered();
+        if (hovered && Gdx.input.justTouched()) justClicked = true;
 
-        Texture px = HealthBar.getWhitePixel();
-
-        if (texNormal != null) {
-            // Draw texture, slightly brightened on hover
-            batch.setColor(hovered ? 1.1f : 1f, hovered ? 1.1f : 1f, hovered ? 1.1f : 1f, 1f);
-            batch.draw(texNormal, bounds.x, bounds.y, bounds.width, bounds.height);
-            batch.setColor(Color.WHITE);
-        } else if (px != null) {
-            // Solid color button
-            batch.setColor(hovered ? COLOR_HOVER : COLOR_NORMAL);
+        com.badlogic.gdx.graphics.Texture px = HealthBar.getWhitePixel();
+        if (px != null) {
+            // Background
+            batch.setColor(hovered ? BG_HOVER : BG_NORMAL);
             batch.draw(px, bounds.x, bounds.y, bounds.width, bounds.height);
-            // Border
-            batch.setColor(COLOR_BORDER);
-            batch.draw(px, bounds.x,                       bounds.y,                       bounds.width,  3);
-            batch.draw(px, bounds.x,                       bounds.y + bounds.height - 3,   bounds.width,  3);
-            batch.draw(px, bounds.x,                       bounds.y,                       3,  bounds.height);
-            batch.draw(px, bounds.x + bounds.width - 3,    bounds.y,                       3,  bounds.height);
+
+            // Gold border (2 px)
+            Color border = hovered ? GOLD : GOLD_DIM;
+            batch.setColor(border);
+            float x = bounds.x, y = bounds.y, w = bounds.width, h = bounds.height;
+            batch.draw(px, x,       y,       w,  2);
+            batch.draw(px, x,       y+h-2,   w,  2);
+            batch.draw(px, x,       y,       2,  h);
+            batch.draw(px, x+w-2,   y,       2,  h);
+
             batch.setColor(Color.WHITE);
         }
 
-        // Always draw text on top
+        // Label
         BitmapFont f = getFont();
-        if (f != null) {
+        if (f != null && label != null) {
             layout.setText(f, label);
             float tx = bounds.x + (bounds.width  - layout.width)  / 2f;
             float ty = bounds.y + (bounds.height + layout.height) / 2f;
             // Shadow
-            f.setColor(COLOR_SHADOW);
+            f.setColor(0, 0, 0, 0.85f);
             f.draw(batch, label, tx + 2f, ty - 2f);
-            // Text
-            f.setColor(hovered ? Color.YELLOW : COLOR_TEXT);
+            // Gold text
+            f.setColor(hovered ? Color.WHITE : GOLD);
             f.draw(batch, label, tx, ty);
             f.setColor(Color.WHITE);
         }
@@ -85,22 +79,16 @@ public class MenuButton {
 
     public boolean isJustClicked() { return justClicked; }
 
-    public static void setFont(BitmapFont font) { sharedFont = font; }
-
-    private void updateInput() {
+    private boolean isHovered() {
         float wx = Gdx.input.getX() / (float) Gdx.graphics.getWidth()  * 1280f;
         float wy = (1f - Gdx.input.getY() / (float) Gdx.graphics.getHeight()) * 720f;
-        hovered = bounds.contains(wx, wy);
-        if (hovered && Gdx.input.justTouched()) justClicked = true;
+        return bounds.contains(wx, wy);
     }
 
     private static BitmapFont getFont() {
         if (sharedFont != null) return sharedFont;
-        // Fallback built-in font
-        if (sharedFont == null) {
-            sharedFont = new BitmapFont();
-            sharedFont.getData().setScale(2.5f);
-        }
+        sharedFont = new BitmapFont();
+        sharedFont.getData().setScale(2.5f);
         return sharedFont;
     }
 }

@@ -1,7 +1,6 @@
 package com.valmerion.screens;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
@@ -13,6 +12,7 @@ import com.valmerion.dialogue.DialogueOverlay;
 import com.valmerion.entities.Player;
 import com.valmerion.game.GameState;
 import com.valmerion.ui.HealthBar;
+import com.valmerion.ui.MenuButton;
 import com.valmerion.ui.PauseOverlay;
 import com.valmerion.ui.TouchControls;
 import com.valmerion.utils.Constants;
@@ -35,6 +35,7 @@ public class WorldScreen extends BaseScreen {
     private final HealthBar       hpBar;
     private final HealthBar       hungerBar;
     private final PauseOverlay    pause;
+    private final MenuButton      btnTalk;
     private final Texture         whitePixel;
     private final TouchControls   touchControls;
 
@@ -69,6 +70,11 @@ public class WorldScreen extends BaseScreen {
         hpBar     = new HealthBar(20, Constants.WORLD_HEIGHT - 54, 220, 28, "Здоровье", font);
         hungerBar = new HealthBar(20, Constants.WORLD_HEIGHT - 90, 220, 22, "Голод",    font);
         pause     = new PauseOverlay(font);
+        MenuButton.setFont(font);
+        // "Говорить" button — bottom center, shown when near NPC
+        float bw = 260f, bh = 72f;
+        btnTalk = new MenuButton(null, null, "Говорить",
+            Constants.WORLD_WIDTH / 2f - bw / 2f, 20f, bw, bh);
     }
 
     @Override public void show() { dialogueStarted = false; }
@@ -113,7 +119,7 @@ public class WorldScreen extends BaseScreen {
             return;
         }
 
-        if (nearNpc != null && Gdx.input.isKeyJustPressed(Keys.E) && !dialogueOverlay.isActive())
+        if (nearNpc != null && btnTalk.isJustClicked() && !dialogueOverlay.isActive())
             startDialogue(nearNpc);
     }
 
@@ -160,20 +166,19 @@ public class WorldScreen extends BaseScreen {
         hpBar.render(batch);
         hungerBar.render(batch);
 
-        if (nearNpc != null && font != null) {
-            font.setColor(com.badlogic.gdx.graphics.Color.YELLOW);
-            font.draw(batch, "E — говорить", player.getPosition().x - 20, GROUND_Y + 210f);
+        if (font != null) {
+            font.setColor(1f, 0.84f, 0.2f, 1f);
+            font.draw(batch,
+                "Репутация: " + (int) GameState.INSTANCE.reputation
+                + "   Класс: " + player.getPlayerClass().displayName,
+                20, 30);
             font.setColor(com.badlogic.gdx.graphics.Color.WHITE);
         }
 
-        if (font != null) {
-            font.draw(batch,
-                "Репутация: " + (int) GameState.INSTANCE.reputation
-                + "   Класс: " + player.getPlayerClass().displayName + "   [Tab — сменить]",
-                20, 30);
+        if (!dialogueOverlay.isActive() && !pause.isPaused()) {
+            touchControls.render(batch);
+            if (nearNpc != null) btnTalk.render(batch, 0);
         }
-
-        if (!dialogueOverlay.isActive() && !pause.isPaused()) touchControls.render(batch);
         dialogueOverlay.render(batch);
         pause.render(batch);
         batch.end();

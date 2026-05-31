@@ -1,13 +1,14 @@
 package com.valmerion.screens;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.valmerion.ValmerionGame;
 import com.valmerion.assets.AssetLoader;
+import com.valmerion.ui.HealthBar;
+import com.valmerion.ui.MenuButton;
 import com.valmerion.utils.Constants;
 
 /**
@@ -45,10 +46,21 @@ public class CutsceneScreen extends BaseScreen {
     // ── UI ────────────────────────────────────────────────────────────────────
     private final BitmapFont  font;
     private final GlyphLayout layout = new GlyphLayout();
+    private final MenuButton  btnSkip;
 
     public CutsceneScreen(ValmerionGame game) {
         super(game);
         font = assets.font(AssetLoader.FONT_MAIN);
+        MenuButton.setFont(font);
+
+        // White pixel for button
+        com.badlogic.gdx.graphics.Pixmap pm = new com.badlogic.gdx.graphics.Pixmap(1,1,com.badlogic.gdx.graphics.Pixmap.Format.RGBA8888);
+        pm.setColor(1,1,1,1); pm.fill();
+        HealthBar.setWhitePixel(new com.badlogic.gdx.graphics.Texture(pm));
+        pm.dispose();
+
+        btnSkip = new MenuButton(null, null, "Пропустить  ›",
+            Constants.WORLD_WIDTH - 230f, 20f, 210f, 55f);
 
         slides = new Texture[AssetLoader.CUTSCENE_SLIDES.length];
         for (int i = 0; i < slides.length; i++) {
@@ -104,13 +116,13 @@ public class CutsceneScreen extends BaseScreen {
             font.setColor(1, 1, 1, 1);
         }
 
+        // Skip button
+        btnSkip.render(batch, 0);
+
         batch.setColor(1, 1, 1, 1);
         batch.end();
 
-        // ── Skip ──────────────────────────────────────────────────────────────
-        if (Gdx.input.isKeyJustPressed(Keys.SPACE)
-                || Gdx.input.isKeyJustPressed(Keys.ENTER)
-                || Gdx.input.justTouched()) {
+        if (btnSkip.isJustClicked()) {
             game.setScreen(new AcademyScreen(game));
         }
     }

@@ -1,7 +1,6 @@
 package com.valmerion.ui;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
@@ -32,7 +31,6 @@ public class PauseOverlay {
 
     private boolean paused    = false;
     private boolean wantsMenu = false;
-    private boolean prevEsc   = false;
 
     private final BitmapFont  font;
     private final GlyphLayout layout = new GlyphLayout();
@@ -55,10 +53,6 @@ public class PauseOverlay {
 
     /** Call every frame before player update. Returns true while paused. */
     public boolean update() {
-        boolean escNow = Gdx.input.isKeyPressed(Keys.ESCAPE);
-        if (escNow && !prevEsc) paused = !paused;
-        prevEsc = escNow;
-
         if (Gdx.input.justTouched()) {
             float wx = toWX(Gdx.input.getX());
             float wy = toWY(Gdx.input.getY());

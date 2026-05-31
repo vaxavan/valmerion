@@ -1,13 +1,13 @@
 package com.valmerion.screens;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.valmerion.ValmerionGame;
 import com.valmerion.assets.AssetLoader;
+import com.valmerion.ui.MenuButton;
 import com.valmerion.utils.Constants;
 
 /**
@@ -18,7 +18,6 @@ public class CongratulatoryScreen extends BaseScreen {
 
     private static final String LINE_CONGRATS = "Поздравляем с прохождением обучения!";
     private static final String LINE_SOON     = "В скором времени будет продолжение...";
-    private static final String LINE_PRESS    = "[ ENTER ] — вернуться в главное меню";
 
     private final BitmapFont  font;
     private final BitmapFont  titleFont;
@@ -32,11 +31,17 @@ public class CongratulatoryScreen extends BaseScreen {
     private static final int  SPARK = 60;
     private final float[] sx, sy, ss, sa;
 
+    private final MenuButton btnMenu;
+
     public CongratulatoryScreen(ValmerionGame game) {
         super(game);
         font       = assets.font(AssetLoader.FONT_MAIN);
         titleFont  = assets.font(AssetLoader.FONT_TITLE);
         background = assets.texture(AssetLoader.TEX_CONGRATS_BG);
+        MenuButton.setFont(font);
+        float bw = 320f, bh = 80f;
+        btnMenu = new MenuButton(null, null, "В главное меню",
+            Constants.WORLD_WIDTH / 2f - bw / 2f, 60f, bw, bh);
 
         sx = new float[SPARK]; sy = new float[SPARK];
         ss = new float[SPARK]; sa = new float[SPARK];
@@ -93,15 +98,15 @@ public class CongratulatoryScreen extends BaseScreen {
 
         // Text lines
         BitmapFont big = titleFont != null ? titleFont : font;
-        if (big  != null) drawCentred(big,  LINE_CONGRATS, Constants.WORLD_HEIGHT / 2f + 100f, 1f, 0.88f, 0.35f, alpha1);
+        if (big  != null) drawCentred(big,  LINE_CONGRATS, Constants.WORLD_HEIGHT / 2f + 100f, 1f,    0.88f, 0.35f, alpha1);
         if (font != null) drawCentred(font, LINE_SOON,     Constants.WORLD_HEIGHT / 2f + 20f,  0.75f, 0.85f, 1f,   alpha2);
-        if (font != null) drawCentred(font, LINE_PRESS,    90f,                                  0.55f, 0.55f, 0.55f, alpha3);
+
+        // Button appears after LINE_SOON fades in
+        if (alpha2 > 0.5f) btnMenu.render(batch, 0);
 
         batch.end();
 
-        if (alpha3 > 0.5f &&
-                (Gdx.input.isKeyJustPressed(Keys.ENTER) || Gdx.input.isKeyJustPressed(Keys.ESCAPE)
-                 || Gdx.input.justTouched())) {
+        if (alpha2 > 0.5f && btnMenu.isJustClicked()) {
             game.setScreen(new MenuScreen(game));
         }
     }

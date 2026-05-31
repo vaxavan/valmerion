@@ -89,7 +89,7 @@ public class AcademyScreen extends BaseScreen {
         hungerBar   = new HealthBar(20, Constants.WORLD_HEIGHT - 90,  220, 22, "Голод",    font);
         goblinHpBar = new HealthBar(Constants.WORLD_WIDTH - 240, Constants.WORLD_HEIGHT - 54, 220, 28, "Гоблин", font);
 
-        player   = new Player(assets, 150f, 160f);
+        player   = new Player(assets, 150f, 128f);
         player.setTouchControls(touchControls);
         player.setDisplayScale(2.5f);
         initPosX = player.getPosition().x;
@@ -201,8 +201,8 @@ public class AcademyScreen extends BaseScreen {
     }
 
     private void spawnGoblin(float x, Mode mode) {
-        goblin = new Goblin(assets, x, 160f, mode);
-        goblin.setDisplayScale(1.3f);
+        goblin = new Goblin(assets, x, 128f, mode);
+        goblin.setDisplayScale(2.0f);
         Goblin ref = goblin;  // capture stable reference — goblin field may be nulled later
         goblin.setAttackListener(dmg -> {
             if (ref.isAlive()) player.takeDamage(dmg);

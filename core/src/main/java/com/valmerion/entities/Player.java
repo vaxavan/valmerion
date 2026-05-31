@@ -29,7 +29,7 @@ public class Player extends Entity {
     private static final float HITBOX_H  = 80f;
 
     private static final float GRAVITY       = -900f;
-    private static final float GROUND_Y      = 160f;   // platform top
+    private static final float GROUND_Y      = 128f;   // platform top
 
     // ── Class & Animation ─────────────────────────────────────────────────────
     private PlayerClass  playerClass;

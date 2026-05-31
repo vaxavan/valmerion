@@ -12,7 +12,7 @@ public class Goblin extends Entity {
     private static final float DISPLAY_H  = 96f;
     private static final float HITBOX_W   = 48f;
     private static final float HITBOX_H   = 64f;
-    private static final float GROUND_Y   = 160f;
+    private static final float GROUND_Y   = 128f;
     private static final float GRAVITY    = -900f;
 
     // Attack animation: 4 frames × 0.07 s = 0.28 s.

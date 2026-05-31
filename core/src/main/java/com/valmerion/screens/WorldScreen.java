@@ -20,7 +20,7 @@ import com.valmerion.utils.PlaceholderTextures;
 
 public class WorldScreen extends BaseScreen {
 
-    private static final float GROUND_Y          = 160f;
+    private static final float GROUND_Y          = 128f;
     private static final float NPC_INTERACT_DIST = 90f;
     private static final float ZAK_X    = 500f;
     private static final float HENKAI_X = 900f;

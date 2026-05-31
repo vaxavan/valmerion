@@ -11,6 +11,8 @@ public class GameState {
     public float markXp        = 0f;    // XP метки Эона
     public String playerRank   = "E";  // E,D,C,B,A,S
 
+    public String selectedClass = "archer"; // archer | mage | warrior
+
     private GameState() {}
 
     public void addReputation(float amount) {

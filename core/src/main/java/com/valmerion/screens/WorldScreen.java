@@ -61,7 +61,8 @@ public class WorldScreen extends BaseScreen {
         pm.dispose();
         HealthBar.setWhitePixel(whitePixel);
 
-        player = new Player(assets, 150f, GROUND_Y);
+        com.valmerion.entities.PlayerClass pClass = classFromState();
+        player = new Player(assets, 150f, GROUND_Y, pClass);
         player.setTouchControls(touchControls);
         player.unlockAll();
 
@@ -245,6 +246,14 @@ public class WorldScreen extends BaseScreen {
             new DialogueLine("Хенкай",
                 "Тогда выступаем. История Валмериона только начинается..."),
         };
+    }
+
+    private static com.valmerion.entities.PlayerClass classFromState() {
+        String s = GameState.INSTANCE.selectedClass;
+        for (com.valmerion.entities.PlayerClass c : com.valmerion.entities.PlayerClass.values()) {
+            if (c.prefix.equals(s)) return c;
+        }
+        return com.valmerion.entities.PlayerClass.ARCHER;
     }
 
     @Override

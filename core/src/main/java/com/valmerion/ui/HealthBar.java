@@ -39,51 +39,32 @@ public class HealthBar {
     public void render(SpriteBatch batch) {
         if (whitePixel == null) return;
 
-        // ── Background ────────────────────────────────────────────────────────
-        batch.setColor(0.05f, 0.04f, 0.10f, 0.82f);
+        // Background
+        batch.setColor(0.1f, 0.1f, 0.1f, 0.85f);
         batch.draw(whitePixel, x, y, width, height);
 
-        // ── Fill bar ──────────────────────────────────────────────────────────
+        // Fill
         Color fill;
         if (isHunger) {
-            fill = displayRatio > 0.5f ? new Color(0.90f, 0.58f, 0.08f, 1f)
-                 : displayRatio > 0.25f ? new Color(0.95f, 0.35f, 0.05f, 1f)
-                 :                        new Color(0.80f, 0.10f, 0.05f, 1f);
+            fill = new Color(0.85f, 0.55f, 0.1f, 1f);
         } else {
-            fill = displayRatio > 0.5f  ? new Color(0.15f, 0.78f, 0.22f, 1f)
-                 : displayRatio > 0.25f ? new Color(0.92f, 0.76f, 0.08f, 1f)
-                 :                        new Color(0.88f, 0.12f, 0.12f, 1f);
+            fill = displayRatio > 0.5f  ? new Color(0.15f, 0.75f, 0.15f, 1f)
+                 : displayRatio > 0.25f ? new Color(0.9f,  0.75f, 0.1f,  1f)
+                 :                        new Color(0.85f, 0.15f, 0.15f, 1f);
         }
         batch.setColor(fill);
-        float fillW = (width - 4f) * displayRatio;
-        batch.draw(whitePixel, x + 2, y + 2, fillW, height - 4f);
+        batch.draw(whitePixel, x + 2, y + 2, (width - 4) * displayRatio, height - 4);
 
-        // Shine strip on top of fill
-        if (fillW > 4f) {
-            batch.setColor(1f, 1f, 1f, 0.12f);
-            batch.draw(whitePixel, x + 2, y + height - 5f, fillW, 3f);
-        }
-
-        // ── Thin border ───────────────────────────────────────────────────────
-        batch.setColor(0.55f, 0.45f, 0.70f, 0.70f);
-        batch.draw(whitePixel, x,           y,            width,  1.5f);
-        batch.draw(whitePixel, x,           y+height-1.5f, width, 1.5f);
-        batch.draw(whitePixel, x,           y,            1.5f,   height);
-        batch.draw(whitePixel, x+width-1.5f, y,           1.5f,   height);
-
-        // ── Label (small, gold, left-aligned) ─────────────────────────────────
+        // Label — smaller scale
         if (font != null && label != null) {
             float origSx = font.getScaleX(), origSy = font.getScaleY();
             font.getData().setScale(0.55f);
             layout.setText(font, label);
-            float tx = x + 5f;
+            float tx = x + 6f;
             float ty = y + height / 2f + layout.height / 2f;
-            // Shadow
-            font.setColor(0f, 0f, 0f, 0.75f);
+            font.setColor(0f, 0f, 0f, 0.85f);
             font.draw(batch, label, tx + 1f, ty - 1f);
-            // Gold text
-            font.setColor(isHunger ? new Color(1f, 0.82f, 0.40f, 1f)
-                                   : new Color(0.85f, 0.95f, 0.85f, 1f));
+            font.setColor(Color.WHITE);
             font.draw(batch, label, tx, ty);
             font.getData().setScale(origSx, origSy);
             font.setColor(Color.WHITE);

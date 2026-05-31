@@ -66,10 +66,14 @@ public class AnimationSet {
     private Animation<TextureRegion> buildAnim(TextureAtlas atlas, String regionName,
                                                float frameDuration,
                                                Animation.PlayMode mode) {
-        Array<TextureAtlas.AtlasRegion> regions = atlas.findRegions(regionName);
-        if (regions.isEmpty()) return null;
-        Animation<TextureRegion> anim = new Animation<>(frameDuration, regions, mode);
-        return anim;
+        Array<TextureRegion> frames = new Array<>();
+        for (int i = 1; i <= 32; i++) {
+            TextureAtlas.AtlasRegion r = atlas.findRegion(regionName + "_" + String.format("%03d", i));
+            if (r == null) break;
+            frames.add(r);
+        }
+        if (frames.isEmpty()) return null;
+        return new Animation<>(frameDuration, frames, mode);
     }
 
     private Animation<TextureRegion> getAnim(State s) {

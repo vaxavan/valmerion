@@ -45,6 +45,9 @@ public class MenuButton {
 
         com.badlogic.gdx.graphics.Texture px = HealthBar.getWhitePixel();
         if (px != null) {
+            // Drop shadow
+            batch.setColor(0f, 0f, 0f, 0.45f);
+            batch.draw(px, bounds.x + 5f, bounds.y - 5f, bounds.width, bounds.height);
             // Background
             batch.setColor(hovered ? BG_HOVER : BG_NORMAL);
             batch.draw(px, bounds.x, bounds.y, bounds.width, bounds.height);

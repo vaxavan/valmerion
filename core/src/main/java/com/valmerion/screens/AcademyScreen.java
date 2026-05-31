@@ -250,7 +250,7 @@ public class AcademyScreen extends BaseScreen {
             font.setColor(com.badlogic.gdx.graphics.Color.WHITE);
         }
 
-        if (!pause.isPaused()) touchControls.render(batch);
+        if (!pause.isPaused()) { touchControls.render(batch); touchControls.renderLabels(batch, font); }
         pause.render(batch);
 
         batch.end();

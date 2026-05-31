@@ -194,6 +194,7 @@ public class WorldScreen extends BaseScreen {
 
         if (!dialogueOverlay.isActive() && !pause.isPaused()) {
             touchControls.render(batch);
+            touchControls.renderLabels(batch, font);
             if (nearNpc != null) btnTalk.render(batch, 0);
         }
         dialogueOverlay.render(batch);

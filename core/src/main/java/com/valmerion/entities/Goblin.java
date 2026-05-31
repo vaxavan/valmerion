@@ -101,10 +101,16 @@ public class Goblin extends Entity {
 
         float dist = Math.abs(playerCenterX - (position.x + HITBOX_W / 2f));
 
-        if (dist > Constants.GOBLIN_AGGRO_RANGE) {
+        // When displayScale > 1 the sprite is visually larger than the hitbox.
+        // Extend attack/aggro ranges proportionally so behaviour matches visuals.
+        float extra       = (displayScale - 1f) * DISPLAY_W * 0.5f;
+        float attackRange = Constants.GOBLIN_ATTACK_RANGE + extra;
+        float aggroRange  = Constants.GOBLIN_AGGRO_RANGE  + extra;
+
+        if (dist > aggroRange) {
             velocity.x = 0;
             animations.setState(AnimationSet.State.IDLE);
-        } else if (dist > Constants.GOBLIN_ATTACK_RANGE) {
+        } else if (dist > attackRange) {
             float dir   = playerCenterX > position.x + HITBOX_W / 2f ? 1f : -1f;
             velocity.x  = dir * Constants.GOBLIN_MOVE_SPEED;
             facingRight  = dir > 0;

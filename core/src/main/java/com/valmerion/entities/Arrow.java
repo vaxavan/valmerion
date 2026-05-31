@@ -22,7 +22,7 @@ public class Arrow {
 
     public Arrow(float startX, float startY, boolean facingRight) {
         this.x    = startX;
-        this.y    = startY + 30f;  // chest height
+        this.y    = startY;  // height set by caller
         this.velX = facingRight ? SPEED : -SPEED;
         hitbox.set(x, y, W, H);
 

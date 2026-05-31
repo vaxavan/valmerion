@@ -20,9 +20,9 @@ public class PauseOverlay {
     private static final float IX    = Constants.WORLD_WIDTH  - ICON - 12f;
     private static final float IY    = Constants.WORLD_HEIGHT - ICON - 12f;
 
-    private static final float PANEL_W = 460f;
-    private static final float PANEL_H = 300f;
-    private static final float BTN_W   = 360f;
+    private static final float PANEL_W = 480f;
+    private static final float PANEL_H = 380f;   // taller so title + buttons don't overlap
+    private static final float BTN_W   = 380f;
     private static final float BTN_H   = 80f;
 
     private final Rectangle iconR;
@@ -47,8 +47,10 @@ public class PauseOverlay {
         float cy = (Constants.WORLD_HEIGHT - PANEL_H) / 2f;
         float bx = (Constants.WORLD_WIDTH  - BTN_W)   / 2f;
 
-        btnResume = new Rectangle(bx, cy + PANEL_H / 2f,                 BTN_W, BTN_H);
-        btnMenu   = new Rectangle(bx, cy + PANEL_H / 2f - BTN_H - 20f,  BTN_W, BTN_H);
+        // Buttons sit in lower portion; title takes upper ~35%
+        float btnAreaTop = cy + PANEL_H * 0.44f;
+        btnResume = new Rectangle(bx, btnAreaTop,                 BTN_W, BTN_H);
+        btnMenu   = new Rectangle(bx, btnAreaTop - BTN_H - 18f,  BTN_W, BTN_H);
     }
 
     /** Call every frame before player update. Returns true while paused. */
@@ -97,13 +99,35 @@ public class PauseOverlay {
         batch.setColor(0.08f, 0.06f, 0.18f, 0.97f);
         batch.draw(px, cx, cy, PANEL_W, PANEL_H);
 
-        batch.setColor(0.55f, 0.45f, 0.85f, 1f);
+        // Purple border
+        batch.setColor(0.50f, 0.40f, 0.80f, 1f);
         batch.draw(px, cx,            cy,            PANEL_W, 3);
         batch.draw(px, cx,            cy+PANEL_H-3,  PANEL_W, 3);
         batch.draw(px, cx,            cy,            3,       PANEL_H);
         batch.draw(px, cx+PANEL_W-3,  cy,            3,       PANEL_H);
 
-        drawCentred("ПАУЗА", cy + PANEL_H - 62f, 0.85f, 0.75f, 1f);
+        // ── Beautiful title ───────────────────────────────────────────────────
+        float titleY = cy + PANEL_H - 55f;
+        drawCentred("ПАУЗА", titleY, 1f, 0.84f, 0.20f);   // gold
+
+        // Decorative lines flanking the title
+        if (font != null) {
+            layout.setText(font, "ПАУЗА");
+            float lineW  = (PANEL_W - layout.width) / 2f - 30f;
+            float lineY2 = titleY - layout.height / 2f;
+            float lineX1 = cx + 18f;
+            float lineX2 = cx + PANEL_W - 18f - lineW;
+            batch.setColor(1f, 0.84f, 0.20f, 0.55f);
+            batch.draw(px, lineX1, lineY2, lineW, 2f);
+            batch.draw(px, lineX2, lineY2, lineW, 2f);
+        }
+
+        // Thin gold separator below title
+        float sepY = cy + PANEL_H - 80f;
+        batch.setColor(1f, 0.84f, 0.20f, 0.35f);
+        batch.draw(px, cx + 20f, sepY, PANEL_W - 40f, 1.5f);
+        batch.setColor(Color.WHITE);
+
         drawBtn(px, btnResume, "Продолжить",   0.15f, 0.65f, 0.25f);
         drawBtn(px, btnMenu,   "Главное меню", 0.65f, 0.20f, 0.20f);
 

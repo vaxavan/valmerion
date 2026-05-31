@@ -51,7 +51,8 @@ public class MenuScreen extends BaseScreen {
 
         float cx    = Constants.WORLD_WIDTH / 2f - BTN_W / 2f;
         float totalH = BTN_H * 3 + BTN_GAP * 2;
-        float baseY  = Constants.WORLD_HEIGHT / 2f - totalH / 2f - 60f;
+        // Keep buttons in lower half so title has room at top
+        float baseY  = Constants.WORLD_HEIGHT / 2f - totalH / 2f - 100f;
 
         btnContinue = new MenuButton(null, null, "Продолжить", cx, baseY + (BTN_H + BTN_GAP) * 2, BTN_W, BTN_H);
         btnNewGame  = new MenuButton(null, null, "Новая игра", cx, baseY + (BTN_H + BTN_GAP),     BTN_W, BTN_H);
@@ -113,25 +114,39 @@ public class MenuScreen extends BaseScreen {
         BitmapFont f = titleFont != null ? titleFont : font;
         if (f == null) return;
 
+        // Title sits high — leave plenty of room below for buttons
         String title = "VALMERION";
         layout.setText(f, title);
+        float titleH = layout.height;
         float tx = (Constants.WORLD_WIDTH - layout.width) / 2f;
-        float ty = Constants.WORLD_HEIGHT - 90f;
+        float ty = Constants.WORLD_HEIGHT - 55f;   // near top
 
-        // Glow shadow
-        f.setColor(0.6f, 0.4f, 0f, alpha * 0.6f);
-        f.draw(batch, title, tx + 4f, ty - 4f);
+        // Gold glow shadow
+        f.setColor(0.55f, 0.35f, 0f, alpha * 0.55f);
+        f.draw(batch, title, tx + 5f, ty - 5f);
         // Gold text
         f.setColor(1f, 0.84f, 0.20f, alpha);
         f.draw(batch, title, tx, ty);
 
-        // Subtitle
+        // Decorative line under title
+        Texture px = HealthBar.getWhitePixel();
+        if (px != null) {
+            float lineY = ty - titleH - 8f;
+            float lineW = layout.width * 1.1f;
+            float lineX = (Constants.WORLD_WIDTH - lineW) / 2f;
+            batch.setColor(1f, 0.84f, 0.20f, alpha * 0.6f);
+            batch.draw(px, lineX, lineY, lineW, 2f);
+            batch.setColor(Color.WHITE);
+        }
+
+        // Subtitle — well below the line
         if (font != null) {
             String sub = "Академия Валмерион";
             layout.setText(font, sub);
-            float sx = (Constants.WORLD_WIDTH - layout.width) / 2f;
-            font.setColor(0.75f, 0.65f, 0.30f, alpha * 0.9f);
-            font.draw(batch, sub, sx, ty - layout.height - 14f);
+            float sx2 = (Constants.WORLD_WIDTH - layout.width) / 2f;
+            float sy2  = ty - titleH - 28f;        // 28 px below the title line
+            font.setColor(0.70f, 0.60f, 0.28f, alpha * 0.85f);
+            font.draw(batch, sub, sx2, sy2);
             font.setColor(Color.WHITE);
         }
 

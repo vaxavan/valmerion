@@ -27,6 +27,7 @@ public class WorldScreen extends BaseScreen {
 
     private final Player          player;
     private final BitmapFont      font;
+    private final com.badlogic.gdx.graphics.g2d.GlyphLayout glyphLayout = new com.badlogic.gdx.graphics.g2d.GlyphLayout();
     private final Texture         background;
     private final Texture         zakTex;
     private final Texture         henkaiTex;
@@ -213,8 +214,8 @@ public class WorldScreen extends BaseScreen {
             String hint = nearNpc == null
                 ? "Используй джойстик чтобы идти к Заку »»"
                 : "Нажми «Говорить» чтобы поговорить с Заком";
-            com.badlogic.gdx.graphics.g2d.GlyphLayout gl = new com.badlogic.gdx.graphics.g2d.GlyphLayout();
-            gl.setText(font, hint);
+            glyphLayout.setText(font, hint);
+            com.badlogic.gdx.graphics.g2d.GlyphLayout gl = glyphLayout;
             font.setColor(1f, 0.95f, 0.75f, 1f);
             font.draw(batch, hint, hx + (hw - gl.width) / 2f, hy + (hh + gl.height) / 2f);
             font.setColor(com.badlogic.gdx.graphics.Color.WHITE);

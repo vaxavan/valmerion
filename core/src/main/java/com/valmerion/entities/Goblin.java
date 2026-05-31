@@ -77,6 +77,7 @@ public class Goblin extends Entity {
                 attacking      = false;
                 attackTimer    = 0f;
                 attackCooldown = Constants.GOBLIN_ATTACK_COOLDOWN;
+                animations.setState(AnimationSet.State.IDLE);
             } else {
                 animations.setState(AnimationSet.State.ATTACK);
             }

@@ -164,6 +164,12 @@ public class Player extends Entity {
 
     public List<Arrow> getArrows() { return arrows; }
 
+    @Override
+    public void dispose() {
+        if (placeholder != null) { placeholder.dispose(); placeholder = null; }
+        Arrow.disposeTexture();
+    }
+
     // ── Tutorial control locks ────────────────────────────────────────────────
 
     public void unlockJump()   { canJump   = true; }

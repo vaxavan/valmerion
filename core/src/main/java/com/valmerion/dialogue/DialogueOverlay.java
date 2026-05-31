@@ -76,7 +76,7 @@ public class DialogueOverlay {
     public int     getLastChoiceIndex() { return choiceIndex; }
 
     public void update(float delta) {
-        if (!active || finished) return;
+        if (!active || finished || lines == null || lineIndex >= lines.length) return;
         DialogueLine line = lines[lineIndex];
 
         if (!Gdx.input.justTouched()) return;

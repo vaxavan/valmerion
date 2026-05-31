@@ -175,11 +175,11 @@ public class AcademyScreen extends BaseScreen {
                 break;
             case STAGE_DUMMY_GOBLIN:
                 if (goblin == null) spawnGoblin(900f, Mode.STATIC);
-                else if (!goblin.isAlive()) { goblin = null; enter(STAGE_LIVE_GOBLIN); }
+                else if (!goblin.isAlive()) { goblin.dispose(); goblin = null; enter(STAGE_LIVE_GOBLIN); }
                 break;
             case STAGE_LIVE_GOBLIN:
                 if (goblin == null) spawnGoblin(980f, Mode.AGGRESSIVE);
-                else if (!goblin.isAlive()) { goblin = null; enter(STAGE_CONGRATS); }
+                else if (!goblin.isAlive()) { goblin.dispose(); goblin = null; enter(STAGE_CONGRATS); }
                 break;
             case STAGE_CONGRATS:
                 if (stageTimer > 2.5f) {
@@ -203,8 +203,9 @@ public class AcademyScreen extends BaseScreen {
     private void spawnGoblin(float x, Mode mode) {
         goblin = new Goblin(assets, x, 160f, mode);
         goblin.setDisplayScale(2f);
+        Goblin ref = goblin;  // capture stable reference — goblin field may be nulled later
         goblin.setAttackListener(dmg -> {
-            if (goblin != null && goblin.isAlive()) player.takeDamage(dmg);
+            if (ref.isAlive()) player.takeDamage(dmg);
         });
     }
 
@@ -243,10 +244,11 @@ public class AcademyScreen extends BaseScreen {
         if (goblin != null && goblin.isAlive()) goblinHpBar.render(batch);
         hint.render(batch);
 
-        if (font != null)
+        if (font != null) {
             font.setColor(1f, 0.84f, 0.2f, 1f);
             font.draw(batch, "Класс: " + player.getPlayerClass().displayName, 20, 30);
             font.setColor(com.badlogic.gdx.graphics.Color.WHITE);
+        }
 
         if (!pause.isPaused()) touchControls.render(batch);
         pause.render(batch);

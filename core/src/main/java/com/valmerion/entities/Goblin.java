@@ -6,31 +6,31 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.valmerion.assets.AssetLoader;
 import com.valmerion.utils.Constants;
 
-/**
- * Goblin enemy.
- *
- * <p>Two behaviour modes:
- * <ul>
- *   <li>{@code static} — stands still (tutorial dummy)</li>
- *   <li>{@code aggressive} — walks toward player and attacks</li>
- * </ul>
- */
 public class Goblin extends Entity {
 
-    private static final float DISPLAY_W  = 80f;
-    private static final float DISPLAY_H  = 80f;
+    private static final float DISPLAY_W  = 96f;
+    private static final float DISPLAY_H  = 96f;
     private static final float HITBOX_W   = 48f;
     private static final float HITBOX_H   = 64f;
     private static final float GROUND_Y   = 160f;
     private static final float GRAVITY    = -900f;
 
+    // Attack animation: 4 frames × 0.07 s = 0.28 s.
+    // Damage lands on the 3rd frame — the actual swing moment.
+    private static final float ATTACK_HIT_TIME = 0.18f;
+    private static final float ATTACK_TOTAL    = 0.32f;
+
     public enum Mode { STATIC, AGGRESSIVE }
 
     private Mode  mode;
-    private float attackCooldown = 0f;
     private float hitFlashTimer  = 0f;
 
-    // Callback so the screen knows when the goblin attacks
+    // Attack state machine
+    private boolean attacking      = false;
+    private float   attackTimer    = 0f;
+    private boolean hitDelivered   = false;
+    private float   attackCooldown = 0f;
+
     public interface OnAttackListener { void onGoblinAttack(float damage); }
     private OnAttackListener attackListener;
 
@@ -44,13 +44,8 @@ public class Goblin extends Entity {
         sndHit     = assets.sound(AssetLoader.SFX_HIT);
     }
 
-    public void setMode(Mode mode) {
-        this.mode = mode;
-    }
-
-    public void setAttackListener(OnAttackListener l) {
-        this.attackListener = l;
-    }
+    public void setMode(Mode mode)                    { this.mode = mode; }
+    public void setAttackListener(OnAttackListener l) { this.attackListener = l; }
 
     @Override
     public void takeDamage(float amount) {
@@ -58,8 +53,6 @@ public class Goblin extends Entity {
         hitFlashTimer = 0.2f;
         if (sndHit != null) sndHit.play(0.5f);
     }
-
-    // ── Update ────────────────────────────────────────────────────────────────
 
     @Override
     public void update(float delta) {
@@ -69,53 +62,68 @@ public class Goblin extends Entity {
             return;
         }
 
-        hitFlashTimer = Math.max(0, hitFlashTimer - delta);
+        hitFlashTimer  = Math.max(0, hitFlashTimer  - delta);
         attackCooldown = Math.max(0, attackCooldown - delta);
+
+        if (attacking) {
+            attackTimer += delta;
+            // Deliver damage at the swing frame
+            if (!hitDelivered && attackTimer >= ATTACK_HIT_TIME) {
+                hitDelivered = true;
+                if (attackListener != null)
+                    attackListener.onGoblinAttack(Constants.GOBLIN_ATTACK_DAMAGE);
+            }
+            if (attackTimer >= ATTACK_TOTAL) {
+                attacking      = false;
+                attackTimer    = 0f;
+                attackCooldown = Constants.GOBLIN_ATTACK_COOLDOWN;
+            } else {
+                animations.setState(AnimationSet.State.ATTACK);
+            }
+        }
+
         applyGravity(delta);
         position.y = Math.max(GROUND_Y, position.y);
         syncHitbox();
         animations.update(delta);
     }
 
-    /**
-     * AI step — call each frame with the player's position.
-     * Static goblins do nothing; aggressive ones chase and attack.
-     */
     public void updateAI(float delta, float playerX, float playerCenterX) {
-        if (!alive || mode == Mode.STATIC) {
-            animations.setState(AnimationSet.State.IDLE);
+        if (!alive) return;
+
+        if (mode == Mode.STATIC) {
+            if (!attacking) animations.setState(AnimationSet.State.IDLE);
             return;
         }
+
+        if (attacking) return;   // don't interrupt an ongoing swing
 
         float dist = Math.abs(playerCenterX - (position.x + HITBOX_W / 2f));
 
         if (dist > Constants.GOBLIN_AGGRO_RANGE) {
-            // Idle — out of range
             velocity.x = 0;
             animations.setState(AnimationSet.State.IDLE);
         } else if (dist > Constants.GOBLIN_ATTACK_RANGE) {
-            // Chase
-            float dir = playerCenterX > position.x + HITBOX_W / 2f ? 1f : -1f;
-            velocity.x = dir * Constants.GOBLIN_MOVE_SPEED;
-            facingRight = dir > 0;
-            position.x += velocity.x * delta;
-            position.x = Math.max(0, Math.min(position.x, Constants.WORLD_WIDTH - HITBOX_W));
+            float dir   = playerCenterX > position.x + HITBOX_W / 2f ? 1f : -1f;
+            velocity.x  = dir * Constants.GOBLIN_MOVE_SPEED;
+            facingRight  = dir > 0;
+            position.x  += velocity.x * delta;
+            position.x   = Math.max(0, Math.min(position.x, Constants.WORLD_WIDTH - HITBOX_W));
             syncHitbox();
             animations.setState(AnimationSet.State.WALK);
         } else {
-            // Attack range
             velocity.x = 0;
-            animations.setState(AnimationSet.State.ATTACK);
             if (attackCooldown <= 0f) {
-                attackCooldown = Constants.GOBLIN_ATTACK_COOLDOWN;
-                if (attackListener != null) {
-                    attackListener.onGoblinAttack(Constants.GOBLIN_ATTACK_DAMAGE);
-                }
+                attacking    = true;
+                attackTimer  = 0f;
+                hitDelivered = false;
+                facingRight  = playerCenterX > position.x + HITBOX_W / 2f;
+                animations.setState(AnimationSet.State.ATTACK);
+            } else {
+                animations.setState(AnimationSet.State.IDLE);
             }
         }
     }
-
-    // ── Render ────────────────────────────────────────────────────────────────
 
     @Override
     public void render(SpriteBatch batch) {
@@ -124,11 +132,10 @@ public class Goblin extends Entity {
 
         if (hitFlashTimer > 0) {
             float t = hitFlashTimer / 0.2f;
-            batch.setColor(1f, 1f - t, 1f - t, 1f);
+            batch.setColor(1f, 1f - t * 0.7f, 1f - t * 0.7f, 1f);
         }
 
         float drawX = position.x + (HITBOX_W - DISPLAY_W) / 2f;
-
         if (!facingRight) {
             batch.draw(frame, drawX + DISPLAY_W, position.y, -DISPLAY_W, DISPLAY_H);
         } else {

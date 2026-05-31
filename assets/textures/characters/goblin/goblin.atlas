@@ -1,0 +1,159 @@
+goblin.png
+size: 384,576
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+goblin_idle_001
+  rotate: false
+  xy: 0, 0
+  size: 96, 96
+  orig: 96, 96
+  offset: 0, 0
+  index: -1
+goblin_idle_002
+  rotate: false
+  xy: 96, 0
+  size: 96, 96
+  orig: 96, 96
+  offset: 0, 0
+  index: -1
+goblin_idle_003
+  rotate: false
+  xy: 192, 0
+  size: 96, 96
+  orig: 96, 96
+  offset: 0, 0
+  index: -1
+goblin_idle_004
+  rotate: false
+  xy: 288, 0
+  size: 96, 96
+  orig: 96, 96
+  offset: 0, 0
+  index: -1
+goblin_walk_001
+  rotate: false
+  xy: 0, 96
+  size: 96, 96
+  orig: 96, 96
+  offset: 0, 0
+  index: -1
+goblin_walk_002
+  rotate: false
+  xy: 96, 96
+  size: 96, 96
+  orig: 96, 96
+  offset: 0, 0
+  index: -1
+goblin_walk_003
+  rotate: false
+  xy: 192, 96
+  size: 96, 96
+  orig: 96, 96
+  offset: 0, 0
+  index: -1
+goblin_walk_004
+  rotate: false
+  xy: 288, 96
+  size: 96, 96
+  orig: 96, 96
+  offset: 0, 0
+  index: -1
+goblin_run_001
+  rotate: false
+  xy: 0, 192
+  size: 96, 96
+  orig: 96, 96
+  offset: 0, 0
+  index: -1
+goblin_run_002
+  rotate: false
+  xy: 96, 192
+  size: 96, 96
+  orig: 96, 96
+  offset: 0, 0
+  index: -1
+goblin_run_003
+  rotate: false
+  xy: 192, 192
+  size: 96, 96
+  orig: 96, 96
+  offset: 0, 0
+  index: -1
+goblin_run_004
+  rotate: false
+  xy: 288, 192
+  size: 96, 96
+  orig: 96, 96
+  offset: 0, 0
+  index: -1
+goblin_attack_001
+  rotate: false
+  xy: 0, 288
+  size: 96, 96
+  orig: 96, 96
+  offset: 0, 0
+  index: -1
+goblin_attack_002
+  rotate: false
+  xy: 96, 288
+  size: 96, 96
+  orig: 96, 96
+  offset: 0, 0
+  index: -1
+goblin_attack_003
+  rotate: false
+  xy: 192, 288
+  size: 96, 96
+  orig: 96, 96
+  offset: 0, 0
+  index: -1
+goblin_attack_004
+  rotate: false
+  xy: 288, 288
+  size: 96, 96
+  orig: 96, 96
+  offset: 0, 0
+  index: -1
+goblin_hit_001
+  rotate: false
+  xy: 0, 384
+  size: 96, 96
+  orig: 96, 96
+  offset: 0, 0
+  index: -1
+goblin_hit_002
+  rotate: false
+  xy: 96, 384
+  size: 96, 96
+  orig: 96, 96
+  offset: 0, 0
+  index: -1
+goblin_dead_001
+  rotate: false
+  xy: 0, 480
+  size: 96, 96
+  orig: 96, 96
+  offset: 0, 0
+  index: -1
+goblin_dead_002
+  rotate: false
+  xy: 96, 480
+  size: 96, 96
+  orig: 96, 96
+  offset: 0, 0
+  index: -1
+goblin_dead_003
+  rotate: false
+  xy: 192, 480
+  size: 96, 96
+  orig: 96, 96
+  offset: 0, 0
+  index: -1
+goblin_dead_004
+  rotate: false
+  xy: 288, 480
+  size: 96, 96
+  orig: 96, 96
+  offset: 0, 0
+  index: -1

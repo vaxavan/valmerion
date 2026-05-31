@@ -85,9 +85,9 @@ public class AcademyScreen extends BaseScreen {
         pause         = new PauseOverlay(font);
 
         // HP bar — top left; Hunger bar — just below HP
-        playerHpBar = new HealthBar(20, Constants.WORLD_HEIGHT - 54,  220, 28, "HP");
-        hungerBar   = new HealthBar(20, Constants.WORLD_HEIGHT - 90,  220, 22, "Голод");
-        goblinHpBar = new HealthBar(Constants.WORLD_WIDTH - 240, Constants.WORLD_HEIGHT - 54, 220, 28, "Goblin");
+        playerHpBar = new HealthBar(20, Constants.WORLD_HEIGHT - 54,  220, 28, "Здоровье", font);
+        hungerBar   = new HealthBar(20, Constants.WORLD_HEIGHT - 90,  220, 22, "Голод",    font);
+        goblinHpBar = new HealthBar(Constants.WORLD_WIDTH - 240, Constants.WORLD_HEIGHT - 54, 220, 28, "Гоблин", font);
 
         player   = new Player(assets, 150f, 160f);
         player.setTouchControls(touchControls);

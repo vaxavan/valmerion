@@ -9,109 +9,98 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
 
 /**
- * Clickable button that shows a texture (with optional hover texture)
- * or falls back to a coloured label when textures are absent.
- *
- * <p>Coordinate system: world-space at 1280×720 (FitViewport).
+ * Standard menu button — colored rectangle + text label centered on it.
+ * Texture is drawn as background if provided, otherwise a solid color is used.
+ * Always shows the label text on top regardless of texture.
  */
 public class MenuButton {
 
-    private static final float HOVER_SCALE = 1.05f;
-    private static final float SCALE_SPEED = 10f;
+    private static final Color COLOR_NORMAL  = new Color(0.12f, 0.10f, 0.22f, 0.92f);
+    private static final Color COLOR_HOVER   = new Color(0.22f, 0.18f, 0.42f, 0.97f);
+    private static final Color COLOR_BORDER  = new Color(0.55f, 0.45f, 0.85f, 1f);
+    private static final Color COLOR_TEXT    = new Color(0.95f, 0.90f, 1.00f, 1f);
+    private static final Color COLOR_SHADOW  = new Color(0f, 0f, 0f, 0.7f);
 
     private final Texture   texNormal;
-    private final Texture   texHover;   // may be null → tint normal instead
     private final String    label;
     private final Rectangle bounds;
     private final GlyphLayout layout = new GlyphLayout();
 
-    private float   scale        = 1f;
-    private boolean hovered      = false;
-    private boolean justClicked  = false;
+    private boolean hovered     = false;
+    private boolean justClicked = false;
 
-    // Lazily created fallback font (shared across instances)
-    private static BitmapFont fallbackFont;
+    private static BitmapFont sharedFont;
 
-    /**
-     * @param texNormal normal-state texture (may be null)
-     * @param texHover  hover-state texture  (may be null)
-     * @param label     fallback / accessibility label
-     */
     public MenuButton(Texture texNormal, Texture texHover, String label,
                       float x, float y, float w, float h) {
         this.texNormal = texNormal;
-        this.texHover  = texHover;
         this.label     = label;
         this.bounds    = new Rectangle(x, y, w, h);
     }
 
-    /** Convenience constructor without a hover texture. */
     public MenuButton(Texture texNormal, String label,
                       float x, float y, float w, float h) {
         this(texNormal, null, label, x, y, w, h);
     }
 
-    /**
-     * Update + draw. Must be called while the SpriteBatch is active and
-     * the viewport has already been applied.
-     */
     public void render(SpriteBatch batch, float delta) {
         justClicked = false;
-        updateHover();
+        updateInput();
 
-        // Smooth scale lerp
-        float target = hovered ? HOVER_SCALE : 1f;
-        scale += (target - scale) * SCALE_SPEED * delta;
-
-        float sw = bounds.width  * scale;
-        float sh = bounds.height * scale;
-        float dx = bounds.x + (bounds.width  - sw) / 2f;
-        float dy = bounds.y + (bounds.height - sh) / 2f;
+        Texture px = HealthBar.getWhitePixel();
 
         if (texNormal != null) {
-            Texture draw = (hovered && texHover != null) ? texHover : texNormal;
-            // Brighten on hover when there is no separate hover texture
-            if (hovered && texHover == null) {
-                batch.setColor(1f, 1f, 0.85f, 1f);
-            }
-            batch.draw(draw, dx, dy, sw, sh);
+            // Draw texture, slightly brightened on hover
+            batch.setColor(hovered ? 1.1f : 1f, hovered ? 1.1f : 1f, hovered ? 1.1f : 1f, 1f);
+            batch.draw(texNormal, bounds.x, bounds.y, bounds.width, bounds.height);
             batch.setColor(Color.WHITE);
-        } else {
-            drawFallback(batch, dx, dy, sw, sh);
+        } else if (px != null) {
+            // Solid color button
+            batch.setColor(hovered ? COLOR_HOVER : COLOR_NORMAL);
+            batch.draw(px, bounds.x, bounds.y, bounds.width, bounds.height);
+            // Border
+            batch.setColor(COLOR_BORDER);
+            batch.draw(px, bounds.x,                       bounds.y,                       bounds.width,  3);
+            batch.draw(px, bounds.x,                       bounds.y + bounds.height - 3,   bounds.width,  3);
+            batch.draw(px, bounds.x,                       bounds.y,                       3,  bounds.height);
+            batch.draw(px, bounds.x + bounds.width - 3,    bounds.y,                       3,  bounds.height);
+            batch.setColor(Color.WHITE);
+        }
+
+        // Always draw text on top
+        BitmapFont f = getFont();
+        if (f != null) {
+            layout.setText(f, label);
+            float tx = bounds.x + (bounds.width  - layout.width)  / 2f;
+            float ty = bounds.y + (bounds.height + layout.height) / 2f;
+            // Shadow
+            f.setColor(COLOR_SHADOW);
+            f.draw(batch, label, tx + 2f, ty - 2f);
+            // Text
+            f.setColor(hovered ? Color.YELLOW : COLOR_TEXT);
+            f.draw(batch, label, tx, ty);
+            f.setColor(Color.WHITE);
         }
     }
 
-    /** @return true only on the exact frame the button was clicked. */
     public boolean isJustClicked() { return justClicked; }
 
-    // ── Private ───────────────────────────────────────────────────────────────
+    public static void setFont(BitmapFont font) { sharedFont = font; }
 
-    private void updateHover() {
-        // Remap raw mouse coords to world coords (FitViewport 1280×720)
+    private void updateInput() {
         float wx = Gdx.input.getX() / (float) Gdx.graphics.getWidth()  * 1280f;
         float wy = (1f - Gdx.input.getY() / (float) Gdx.graphics.getHeight()) * 720f;
-
         hovered = bounds.contains(wx, wy);
-        if (hovered && Gdx.input.justTouched()) {
-            justClicked = true;
-        }
+        if (hovered && Gdx.input.justTouched()) justClicked = true;
     }
 
-    private void drawFallback(SpriteBatch batch, float x, float y, float w, float h) {
-        BitmapFont f = getFallbackFont();
-        layout.setText(f, label);
-        f.setColor(hovered ? Color.YELLOW : Color.LIGHT_GRAY);
-        f.draw(batch, label,
-               x + (w - layout.width)  / 2f,
-               y + (h + layout.height) / 2f);
-        f.setColor(Color.WHITE);
-    }
-
-    private static BitmapFont getFallbackFont() {
-        if (fallbackFont == null) {
-            fallbackFont = new BitmapFont();
-            fallbackFont.getData().setScale(2.2f);
+    private static BitmapFont getFont() {
+        if (sharedFont != null) return sharedFont;
+        // Fallback built-in font
+        if (sharedFont == null) {
+            sharedFont = new BitmapFont();
+            sharedFont.getData().setScale(2.5f);
         }
-        return fallbackFont;
+        return sharedFont;
     }
 }

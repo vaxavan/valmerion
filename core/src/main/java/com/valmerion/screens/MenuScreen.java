@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.valmerion.ValmerionGame;
 import com.valmerion.assets.AssetLoader;
 import com.valmerion.game.GameState;
+import com.valmerion.ui.HealthBar;
 import com.valmerion.ui.MenuButton;
 import com.valmerion.utils.Constants;
 
@@ -36,10 +37,16 @@ public class MenuScreen extends BaseScreen {
 
         background = assets.texture(AssetLoader.TEX_MENU_BG);
 
-        Texture tNew  = assets.texture(AssetLoader.TEX_BTN_NEW_GAME);
-        Texture tCont = assets.texture(AssetLoader.TEX_BTN_CONTINUE);
-        Texture tSet  = assets.texture(AssetLoader.TEX_BTN_SETTINGS);
-        Texture tExit = assets.texture(AssetLoader.TEX_BTN_EXIT);
+        // White pixel needed for button backgrounds (solid color buttons)
+        com.badlogic.gdx.graphics.Pixmap pm = new com.badlogic.gdx.graphics.Pixmap(1, 1, com.badlogic.gdx.graphics.Pixmap.Format.RGBA8888);
+        pm.setColor(1, 1, 1, 1); pm.fill();
+        com.badlogic.gdx.graphics.Texture wp = new com.badlogic.gdx.graphics.Texture(pm);
+        pm.dispose();
+        HealthBar.setWhitePixel(wp);
+
+        // Pass font to MenuButton so labels render over any texture
+        com.badlogic.gdx.graphics.g2d.BitmapFont menuFont = assets.font(AssetLoader.FONT_MAIN);
+        MenuButton.setFont(menuFont);
 
         float cx = Constants.WORLD_WIDTH / 2f - BTN_W / 2f;
 
@@ -47,10 +54,11 @@ public class MenuScreen extends BaseScreen {
         float totalH = BTN_H * 4 + BTN_GAP * 3;
         float baseY  = Constants.WORLD_HEIGHT / 2f - totalH / 2f - 20f;
 
-        btnContinue = new MenuButton(tCont, null, "Продолжить", cx, baseY + (BTN_H + BTN_GAP) * 3, BTN_W, BTN_H);
-        btnNewGame  = new MenuButton(tNew,  null, "Новая игра", cx, baseY + (BTN_H + BTN_GAP) * 2, BTN_W, BTN_H);
-        btnSettings = new MenuButton(tSet,  null, "Настройки",  cx, baseY + (BTN_H + BTN_GAP),     BTN_W, BTN_H);
-        btnExit     = new MenuButton(tExit, null, "Выход",       cx, baseY,                         BTN_W, BTN_H);
+        // Use null textures — solid colored buttons look better and work everywhere
+        btnContinue = new MenuButton(null, null, "Продолжить", cx, baseY + (BTN_H + BTN_GAP) * 3, BTN_W, BTN_H);
+        btnNewGame  = new MenuButton(null, null, "Новая игра", cx, baseY + (BTN_H + BTN_GAP) * 2, BTN_W, BTN_H);
+        btnSettings = new MenuButton(null, null, "Настройки",  cx, baseY + (BTN_H + BTN_GAP),     BTN_W, BTN_H);
+        btnExit     = new MenuButton(null, null, "Выход",      cx, baseY,                          BTN_W, BTN_H);
 
         music = assets.music(AssetLoader.MUSIC_MENU);
         if (music != null) {

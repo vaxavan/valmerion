@@ -66,8 +66,8 @@ public class WorldScreen extends BaseScreen {
         player.unlockAll();
 
         dialogueOverlay = new DialogueOverlay(font);
-        hpBar     = new HealthBar(20, Constants.WORLD_HEIGHT - 54, 220, 28, "HP");
-        hungerBar = new HealthBar(20, Constants.WORLD_HEIGHT - 90, 220, 22, "Голод");
+        hpBar     = new HealthBar(20, Constants.WORLD_HEIGHT - 54, 220, 28, "Здоровье", font);
+        hungerBar = new HealthBar(20, Constants.WORLD_HEIGHT - 90, 220, 22, "Голод",    font);
         pause     = new PauseOverlay(font);
     }
 

@@ -93,6 +93,19 @@ public class Goblin extends Entity {
         if (!alive) return;
 
         if (mode == Mode.STATIC) {
+            // Static goblins still attack when player is in range
+            if (!attacking && attackCooldown <= 0f) {
+                float dist = Math.abs(playerCenterX - (position.x + HITBOX_W / 2f));
+                float extra = (displayScale - 1f) * DISPLAY_W * 0.5f;
+                if (dist <= Constants.GOBLIN_ATTACK_RANGE + extra) {
+                    attacking    = true;
+                    attackTimer  = 0f;
+                    hitDelivered = false;
+                    facingRight  = playerCenterX > position.x + HITBOX_W / 2f;
+                    animations.setState(AnimationSet.State.ATTACK);
+                    return;
+                }
+            }
             if (!attacking) animations.setState(AnimationSet.State.IDLE);
             return;
         }

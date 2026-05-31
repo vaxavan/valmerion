@@ -91,7 +91,7 @@ public class AcademyScreen extends BaseScreen {
 
         player   = new Player(assets, 150f, 160f);
         player.setTouchControls(touchControls);
-        player.setDisplayScale(1.3f);
+        player.setDisplayScale(2.5f);
         initPosX = player.getPosition().x;
 
         music = assets.music(AssetLoader.MUSIC_ACADEMY);

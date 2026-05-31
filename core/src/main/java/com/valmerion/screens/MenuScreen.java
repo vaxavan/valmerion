@@ -158,8 +158,9 @@ public class MenuScreen extends BaseScreen {
         if (hasSave && btnContinue.isJustClicked()) {
             click();
             if (music != null) music.stop();
-            game.setScreen(GameState.INSTANCE.storyStage == 0
-                ? new AcademyScreen(game) : new WorldScreen(game));
+            int s = GameState.INSTANCE.storyStage;
+            if (s == 1) game.setScreen(new AcademyScreen(game));
+            else        game.setScreen(new WorldScreen(game));
         }
         if (btnNewGame.isJustClicked()) {
             click();

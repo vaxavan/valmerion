@@ -55,7 +55,7 @@ public class DialogueOverlay {
         px = new Texture(pm2);
         pm2.dispose();
 
-        // "▶" continue button — bottom-right of dialogue box
+        // "»" continue button — bottom-right of dialogue box
         continueBtn = new Rectangle(BOX_X + BOX_W - 90f, BOX_Y + 10f, 80f, 44f);
 
         for (int i = 0; i < choiceBtns.length; i++) {
@@ -86,7 +86,7 @@ public class DialogueOverlay {
                  * Constants.WORLD_HEIGHT / Gdx.graphics.getHeight();
 
         if (line.choiceTexts == null) {
-            // tap anywhere on the box or the ▶ button
+            // tap anywhere on the box or the » button
             if (new Rectangle(BOX_X, BOX_Y, BOX_W, BOX_H).contains(wx, wy)) {
                 advance();
             }
@@ -173,7 +173,7 @@ public class DialogueOverlay {
     }
 
     private void renderContinue(SpriteBatch batch) {
-        // Small "▶" button bottom-right
+        // Small "»" button bottom-right
         float bx = BOX_X + BOX_W - 70f;
         float by = BOX_Y + 12f;
         float bw = 60f, bh = 40f;
@@ -187,9 +187,9 @@ public class DialogueOverlay {
         batch.draw(px, bx,      by,      2,  bh);
         batch.draw(px, bx+bw-2, by,      2,  bh);
 
-        layout.setText(font, "▶");
+        layout.setText(font, "»");
         font.setColor(1f, 0.84f, 0.2f, 1f);
-        font.draw(batch, "▶", bx + (bw - layout.width) / 2f,
+        font.draw(batch, "»", bx + (bw - layout.width) / 2f,
                   by + (bh + layout.height) / 2f);
 
         // Hint text

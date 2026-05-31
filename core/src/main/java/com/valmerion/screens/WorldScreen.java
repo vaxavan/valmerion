@@ -23,13 +23,13 @@ public class WorldScreen extends BaseScreen {
     private static final float GROUND_Y          = 160f;
     private static final float NPC_INTERACT_DIST = 90f;
     private static final float ZAK_X    = 500f;
-    private static final float TENKAI_X = 900f;
+    private static final float HENKAI_X = 900f;
 
     private final Player          player;
     private final BitmapFont      font;
     private final Texture         background;
     private final Texture         zakTex;
-    private final Texture         tenkaiTex;
+    private final Texture         henkaiTex;
     private final Texture         npcPlaceholder;
     private final DialogueOverlay dialogueOverlay;
     private final HealthBar       hpBar;
@@ -47,12 +47,11 @@ public class WorldScreen extends BaseScreen {
         font          = assets.font(AssetLoader.FONT_MAIN);
         touchControls = new TouchControls();
 
-        // bg_plaza — ночной средневековый город Артартель
         Texture plaza = assets.texture(AssetLoader.SLIDE_02);
         background = plaza != null ? plaza : assets.texture(AssetLoader.TEX_WORLD_ARTARTEL);
 
-        zakTex     = assets.texture(AssetLoader.TEX_NPC_ZAK);
-        tenkaiTex  = assets.texture(AssetLoader.TEX_NPC_TENKAI);
+        zakTex    = assets.texture(AssetLoader.TEX_NPC_ZAK);
+        henkaiTex = assets.texture(AssetLoader.TEX_NPC_TENKAI);
         npcPlaceholder = PlaceholderTextures.solid(80, 96, com.badlogic.gdx.graphics.Color.CYAN);
 
         Pixmap pm = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
@@ -71,7 +70,6 @@ public class WorldScreen extends BaseScreen {
         hungerBar = new HealthBar(20, Constants.WORLD_HEIGHT - 90, 220, 22, "Голод",    font);
         pause     = new PauseOverlay(font);
         MenuButton.setFont(font);
-        // "Говорить" button — bottom center, shown when near NPC
         float bw = 260f, bh = 72f;
         btnTalk = new MenuButton(null, null, "Говорить",
             Constants.WORLD_WIDTH / 2f - bw / 2f, 20f, bw, bh);
@@ -112,11 +110,8 @@ public class WorldScreen extends BaseScreen {
         nearNpc = null;
         if (stage == 0) {
             if (Math.abs(player.getPosition().x - ZAK_X) < NPC_INTERACT_DIST) nearNpc = "zak";
-        } else if (stage == 1) {
-            if (Math.abs(player.getPosition().x - TENKAI_X) < NPC_INTERACT_DIST) nearNpc = "tenkai";
-        } else if (stage >= 2) {
-            game.setScreen(new CongratulatoryScreen(game));
-            return;
+        } else if (stage == 2) {
+            if (Math.abs(player.getPosition().x - HENKAI_X) < NPC_INTERACT_DIST) nearNpc = "henkai";
         }
 
         if (nearNpc != null && btnTalk.isJustClicked() && !dialogueOverlay.isActive())
@@ -126,7 +121,7 @@ public class WorldScreen extends BaseScreen {
     private void startDialogue(String npc) {
         dialogueStarted = true;
         if ("zak".equals(npc))    dialogueOverlay.show(buildZakDialogue());
-        else if ("tenkai".equals(npc)) dialogueOverlay.show(buildTenkaiDialogue());
+        else if ("henkai".equals(npc)) dialogueOverlay.show(buildHenkaiDialogue());
     }
 
     private void onDialogueFinished() {
@@ -134,8 +129,8 @@ public class WorldScreen extends BaseScreen {
         if (stage == 0) {
             GameState.INSTANCE.storyStage = 1;
             game.setScreen(new AcademyScreen(game));
-        } else if (stage == 1) {
-            GameState.INSTANCE.storyStage = 2;
+        } else if (stage == 2) {
+            GameState.INSTANCE.storyStage = 3;
             game.setScreen(new CongratulatoryScreen(game));
         }
     }
@@ -152,14 +147,22 @@ public class WorldScreen extends BaseScreen {
 
         int stage = GameState.INSTANCE.storyStage;
         Texture zakDraw    = zakTex    != null ? zakTex    : npcPlaceholder;
-        Texture tenkaiDraw = tenkaiTex != null ? tenkaiTex : npcPlaceholder;
+        Texture henkaiDraw = henkaiTex != null ? henkaiTex : npcPlaceholder;
 
         if (stage == 0) {
-            batch.draw(zakDraw,    ZAK_X    - 40, GROUND_Y, 80, 96);
-            if (font != null) font.draw(batch, "Зак",    ZAK_X    - 14, GROUND_Y + 106f);
-        } else if (stage == 1) {
-            batch.draw(tenkaiDraw, TENKAI_X - 40, GROUND_Y, 80, 96);
-            if (font != null) font.draw(batch, "Тенкай", TENKAI_X - 22, GROUND_Y + 106f);
+            batch.draw(zakDraw, ZAK_X - 40, GROUND_Y, 80, 96);
+            if (font != null) {
+                font.setColor(1f, 0.84f, 0.2f, 1f);
+                font.draw(batch, "Зак", ZAK_X - 14, GROUND_Y + 110f);
+                font.setColor(com.badlogic.gdx.graphics.Color.WHITE);
+            }
+        } else if (stage == 2) {
+            batch.draw(henkaiDraw, HENKAI_X - 40, GROUND_Y, 80, 96);
+            if (font != null) {
+                font.setColor(1f, 0.84f, 0.2f, 1f);
+                font.draw(batch, "Хенкай", HENKAI_X - 30, GROUND_Y + 110f);
+                font.setColor(com.badlogic.gdx.graphics.Color.WHITE);
+            }
         }
 
         player.render(batch);
@@ -175,6 +178,11 @@ public class WorldScreen extends BaseScreen {
             font.setColor(com.badlogic.gdx.graphics.Color.WHITE);
         }
 
+        // Movement hint — show at start before player has talked to Zak
+        if (stage == 0 && !dialogueOverlay.isActive()) {
+            drawHint();
+        }
+
         if (!dialogueOverlay.isActive() && !pause.isPaused()) {
             touchControls.render(batch);
             if (nearNpc != null) btnTalk.render(batch, 0);
@@ -184,31 +192,58 @@ public class WorldScreen extends BaseScreen {
         batch.end();
     }
 
+    private void drawHint() {
+        Texture px = HealthBar.getWhitePixel();
+        float hx = Constants.WORLD_WIDTH / 2f - 260f;
+        float hy = Constants.WORLD_HEIGHT - 120f;
+        float hw = 520f, hh = 52f;
+        if (px != null) {
+            batch.setColor(0f, 0f, 0f, 0.6f);
+            batch.draw(px, hx, hy, hw, hh);
+            batch.setColor(1f, 0.84f, 0.2f, 0.5f);
+            batch.draw(px, hx, hy, hw, 2f);
+            batch.draw(px, hx, hy + hh - 2f, hw, 2f);
+            batch.setColor(1f, 1f, 1f, 1f);
+        }
+        if (font != null) {
+            String hint = nearNpc == null
+                ? "Используй джойстик чтобы идти к Заку »»"
+                : "Нажми «Говорить» чтобы поговорить с Заком";
+            com.badlogic.gdx.graphics.g2d.GlyphLayout gl = new com.badlogic.gdx.graphics.g2d.GlyphLayout();
+            gl.setText(font, hint);
+            font.setColor(1f, 0.95f, 0.75f, 1f);
+            font.draw(batch, hint, hx + (hw - gl.width) / 2f, hy + (hh + gl.height) / 2f);
+            font.setColor(com.badlogic.gdx.graphics.Color.WHITE);
+        }
+    }
+
     private DialogueLine[] buildZakDialogue() {
         return new DialogueLine[]{
             new DialogueLine("Зак",
-                "Арнольд! Ты вернулся! Где же ты пропадал все три года?!",
+                "Арнольд! Ты вернулся! Три года прошло... где же ты пропадал?!",
                 new String[]{"Память отшибло. Ты кто?", "Привет... не помню тебя."},
                 new float[]{0f, 5f}, new float[]{0f, 1f}),
             new DialogueLine("Зак",
-                "Неужто старину Зака забыл? Мы же лучшими друзьями были до твоей отлучки. Ладно... начнём по новой."),
+                "Я — Зак, твой лучший друг. Ладно, по новой познакомимся. Главное — ты вернулся."),
             new DialogueLine("Зак",
-                "Сейчас непростое время. Война Света и Тьмы не за горами. Тебе нужно выбрать путь бойца. Идём к Хазану!"),
+                "Война Света и Тьмы уже начинается. Тебе нужно пройти обучение в Академии Валмерион."),
             new DialogueLine("Зак",
-                "Хазан — старый оружейник. Он проверит, какое оружие тебе ближе. Потом — тренировочный плац Академии."),
+                "Используй джойстик слева чтобы двигаться. Зелёная кнопка — прыжок. Красная — атака. Вперёд, в Академию!"),
         };
     }
 
-    private DialogueLine[] buildTenkaiDialogue() {
+    private DialogueLine[] buildHenkaiDialogue() {
         return new DialogueLine[]{
-            new DialogueLine("Тенкай",
-                "Зак рассказал о тебе. Говорит, ты прошёл обучение. Это редкий дар."),
-            new DialogueLine("Тенкай",
-                "Меня зовут Тенкай. Я глава академии Валмерион. Ранг A. Готов взять тебя в обучение."),
-            new DialogueLine("Тенкай",
-                "Учить буду не здесь — в походах. Но сначала — тренировочный плац. Покажи, что умеешь. Вперёд!",
-                new String[]{"Готов!", "Мне нужно подготовиться."},
+            new DialogueLine("Хенкай",
+                "Зак говорил о тебе. Ты прошёл обучение — это редкий дар в наше время."),
+            new DialogueLine("Хенкай",
+                "Я — Хенкай, глава Академии Валмерион. Ранг A. Готов взять тебя в поход."),
+            new DialogueLine("Хенкай",
+                "Война уже у наших ворот. Ты нужен нам, Арнольд. Готов сражаться?",
+                new String[]{"Готов. Веди меня.", "Мне нужно время подготовиться."},
                 new float[]{10f, 0f}, new float[]{1f, 0f}),
+            new DialogueLine("Хенкай",
+                "Тогда выступаем. История Валмериона только начинается..."),
         };
     }
 

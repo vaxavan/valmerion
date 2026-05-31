@@ -142,7 +142,7 @@ public class CutsceneScreen extends BaseScreen {
             float wy = (Gdx.graphics.getHeight() - Gdx.input.getY())
                      * Constants.WORLD_HEIGHT / Gdx.graphics.getHeight();
             if (wx >= SKIP_X && wx <= SKIP_X + SKIP_W && wy >= SKIP_Y && wy <= SKIP_Y + SKIP_H) {
-                game.setScreen(new AcademyScreen(game));
+                game.setScreen(new WorldScreen(game));
             }
         }
     }
@@ -158,7 +158,7 @@ public class CutsceneScreen extends BaseScreen {
         alpha     = 0f;
         fadingOut = false;
         if (index >= slides.length) {
-            game.setScreen(new AcademyScreen(game));
+            game.setScreen(new WorldScreen(game));
         }
     }
 }

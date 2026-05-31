@@ -25,6 +25,7 @@ public class ValmerionGame extends Game {
         Gdx.app.log("Valmerion", "Game started. Resolution: "
                 + Gdx.graphics.getWidth() + "x" + Gdx.graphics.getHeight());
 
+        com.valmerion.game.GameState.INSTANCE.load();
         setScreen(new MenuScreen(this));
     }
 

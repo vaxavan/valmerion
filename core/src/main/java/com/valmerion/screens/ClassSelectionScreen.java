@@ -64,6 +64,7 @@ public class ClassSelectionScreen extends BaseScreen {
             if (confirmTimer >= 0.55f) {
                 GameState.INSTANCE.selectedClass = CLASSES[selected].prefix;
                 GameState.INSTANCE.gameStarted   = true;
+                GameState.INSTANCE.save();
                 game.setScreen(new WorldScreen(game));
                 return;
             }

@@ -89,6 +89,7 @@ public class WorldScreen extends BaseScreen {
 
         boolean paused = pause.update();
         if (pause.wantsMainMenu()) {
+            GameState.INSTANCE.save();
             game.setScreen(new MenuScreen(game));
             return;
         }
@@ -129,9 +130,11 @@ public class WorldScreen extends BaseScreen {
         int stage = GameState.INSTANCE.storyStage;
         if (stage == 0) {
             GameState.INSTANCE.storyStage = 1;
+            GameState.INSTANCE.save();
             game.setScreen(new AcademyScreen(game));
         } else if (stage == 2) {
             GameState.INSTANCE.storyStage = 3;
+            GameState.INSTANCE.save();
             game.setScreen(new CongratulatoryScreen(game));
         }
     }

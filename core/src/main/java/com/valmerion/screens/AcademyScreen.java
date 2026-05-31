@@ -133,6 +133,7 @@ public class AcademyScreen extends BaseScreen {
         boolean paused = pause.update();
         if (pause.wantsMainMenu()) {
             if (music != null) music.stop();
+            GameState.INSTANCE.save();
             game.setScreen(new MenuScreen(game));
             return;
         }
@@ -184,6 +185,7 @@ public class AcademyScreen extends BaseScreen {
                 if (stageTimer > 2.5f) {
                     if (music != null) music.stop();
                     GameState.INSTANCE.storyStage = 2;
+                    GameState.INSTANCE.save();
                     game.setScreen(new WorldScreen(game));
                 }
                 break;

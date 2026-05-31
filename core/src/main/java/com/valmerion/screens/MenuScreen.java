@@ -165,15 +165,12 @@ public class MenuScreen extends BaseScreen {
         }
         if (btnNewGame.isJustClicked()) {
             click();
-            GameState.INSTANCE.storyStage    = 0;
-            GameState.INSTANCE.reputation    = 0f;
-            GameState.INSTANCE.hunger        = 75f;
-            GameState.INSTANCE.selectedClass = "archer";
-            GameState.INSTANCE.gameStarted   = false;
+            GameState.INSTANCE.resetAndSave();
             if (music != null) music.stop();
             game.setScreen(new CutsceneScreen(game));
         }
         if (btnExit.isJustClicked()) {
+            GameState.INSTANCE.save();
             Gdx.app.exit();
         }
     }

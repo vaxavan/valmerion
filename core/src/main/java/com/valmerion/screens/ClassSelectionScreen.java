@@ -167,18 +167,94 @@ public class ClassSelectionScreen extends BaseScreen {
             drawCentredIn(weapon, r, statsY - 72f, 0.85f, 0.75f, 0.55f, 1f);
         }
 
-        // Locked / select label at bottom of card
-        float labelY = r.y + 52f;
+        // Button at bottom of card
+        float bw = r.width - 32f, bh = 52f;
+        float bx = r.x + 16f, by = r.y + 16f;
+        drawSelectBtn(px, bx, by, bw, bh, locked, isSelected, isConfirm);
+    }
+
+    private void drawSelectBtn(com.badlogic.gdx.graphics.Texture px,
+                               float bx, float by, float bw, float bh,
+                               boolean locked, boolean isSelected, boolean isConfirm) {
+        if (px == null || font == null) return;
+
         if (locked) {
-            drawCentredIn("— скоро —", r, labelY, 0.4f, 0.4f, 0.4f, 1f);
-        } else if (isConfirm) {
-            drawCentredIn("Выбрано!", r, labelY, 0.4f, 1f, 0.4f, 1f);
-        } else {
-            drawCentredIn(isSelected ? "[ Выбрать ]" : "Нажми", r, labelY,
-                isSelected ? 1f : 0.55f,
-                isSelected ? 0.84f : 0.55f,
-                isSelected ? 0.20f : 0.55f, 1f);
+            // Flat grey pill
+            batch.setColor(0.18f, 0.16f, 0.22f, 0.8f);
+            batch.draw(px, bx, by, bw, bh);
+            batch.setColor(0.30f, 0.28f, 0.35f, 1f);
+            batch.draw(px, bx,      by,      bw, 2f);
+            batch.draw(px, bx,      by+bh-2, bw, 2f);
+            batch.draw(px, bx,      by,      2f, bh);
+            batch.draw(px, bx+bw-2, by,      2f, bh);
+            layout.setText(font, "— скоро —");
+            font.setColor(0.38f, 0.35f, 0.42f, 1f);
+            font.draw(batch, "— скоро —", bx + (bw - layout.width) / 2f, by + (bh + layout.height) / 2f);
+            font.setColor(Color.WHITE);
+            return;
         }
+
+        if (isConfirm) {
+            // Green glow
+            batch.setColor(0.05f, 0.45f, 0.10f, 1f);
+            batch.draw(px, bx - 2, by - 2, bw + 4, bh + 4);
+            batch.setColor(0.12f, 0.65f, 0.18f, 1f);
+            batch.draw(px, bx, by, bw, bh);
+            batch.setColor(0.5f, 1f, 0.55f, 1f);
+            batch.draw(px, bx,      by,      bw, 2f);
+            batch.draw(px, bx,      by+bh-2, bw, 2f);
+            batch.draw(px, bx,      by,      2f, bh);
+            batch.draw(px, bx+bw-2, by,      2f, bh);
+            layout.setText(font, "✓ Выбрано!");
+            font.setColor(0f, 0f, 0f, 0.6f);
+            font.draw(batch, "✓ Выбрано!", bx + (bw - layout.width) / 2f + 1, by + (bh + layout.height) / 2f - 1);
+            font.setColor(0.85f, 1f, 0.85f, 1f);
+            font.draw(batch, "✓ Выбрано!", bx + (bw - layout.width) / 2f, by + (bh + layout.height) / 2f);
+            font.setColor(Color.WHITE);
+            return;
+        }
+
+        if (isSelected) {
+            // Gold glowing button — outer shadow
+            batch.setColor(0.55f, 0.38f, 0f, 0.5f);
+            batch.draw(px, bx - 3, by - 3, bw + 6, bh + 6);
+            // Dark fill
+            batch.setColor(0.22f, 0.15f, 0.03f, 1f);
+            batch.draw(px, bx, by, bw, bh);
+            // Gold border top highlight
+            batch.setColor(1f, 0.84f, 0.20f, 1f);
+            batch.draw(px, bx,      by,      bw, 2.5f);
+            batch.draw(px, bx,      by+bh-2.5f, bw, 2.5f);
+            batch.draw(px, bx,      by,      2.5f, bh);
+            batch.draw(px, bx+bw-2.5f, by,  2.5f, bh);
+            // Inner lighter strip at top for 3-D feel
+            batch.setColor(1f, 0.92f, 0.45f, 0.25f);
+            batch.draw(px, bx + 3, by + bh - 10f, bw - 6, 7f);
+            // Text with shadow
+            String label = "» Выбрать «";
+            layout.setText(font, label);
+            float tx = bx + (bw - layout.width) / 2f;
+            float ty = by + (bh + layout.height) / 2f;
+            font.setColor(0.3f, 0.15f, 0f, 0.8f);
+            font.draw(batch, label, tx + 1.5f, ty - 1.5f);
+            font.setColor(1f, 0.92f, 0.30f, 1f);
+            font.draw(batch, label, tx, ty);
+        } else {
+            // Subtle idle button
+            batch.setColor(0.10f, 0.08f, 0.18f, 0.9f);
+            batch.draw(px, bx, by, bw, bh);
+            batch.setColor(0.45f, 0.38f, 0.60f, 1f);
+            batch.draw(px, bx,      by,      bw, 2f);
+            batch.draw(px, bx,      by+bh-2, bw, 2f);
+            batch.draw(px, bx,      by,      2f, bh);
+            batch.draw(px, bx+bw-2, by,      2f, bh);
+            String label = "Выбрать";
+            layout.setText(font, label);
+            font.setColor(0.60f, 0.55f, 0.75f, 1f);
+            font.draw(batch, label, bx + (bw - layout.width) / 2f, by + (bh + layout.height) / 2f);
+        }
+        batch.setColor(Color.WHITE);
+        font.setColor(Color.WHITE);
     }
 
     private void handleTouch() {

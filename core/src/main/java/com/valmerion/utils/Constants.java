@@ -22,8 +22,8 @@ public final class Constants {
     public static final float PLAYER_ATTACK_RANGE  = 70f;
 
     // ── Goblin ────────────────────────────────────────────────────────────────
-    public static final float GOBLIN_MOVE_SPEED   = 60f;
-    public static final float GOBLIN_MAX_HP        = 50f;
+    public static final float GOBLIN_MOVE_SPEED   = 110f;
+    public static final float GOBLIN_MAX_HP        = 250f;
     public static final float GOBLIN_ATTACK_DAMAGE = 8f;
     public static final float GOBLIN_ATTACK_RANGE  = 55f;
     public static final float GOBLIN_ATTACK_COOLDOWN = 1.8f;

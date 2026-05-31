@@ -39,8 +39,9 @@ public class Player extends Entity {
 
     // ── State flags ───────────────────────────────────────────────────────────
     private boolean onGround     = false;
-    private boolean attacking    = false;
-    private float   attackTimer  = 0f;
+    private boolean attacking       = false;
+    private float   attackTimer     = 0f;
+    private boolean meleeHitLanded  = false;
     private static final float ATTACK_DURATION = 0.35f;
 
     private float hitFlashTimer  = 0f;
@@ -179,9 +180,12 @@ public class Player extends Entity {
 
     public boolean isAttacking() { return attacking; }
 
-    /** Returns the attack hitbox (in front of player). Null when not attacking. */
+    /**
+     * Returns melee attack hitbox once per swing (null if already landed or not attacking).
+     * Caller should check overlap and call landMeleeHit() to prevent multi-hit.
+     */
     public Rectangle getAttackHitbox() {
-        if (!attacking) return null;
+        if (!attacking || meleeHitLanded) return null;
         float range = Constants.PLAYER_ATTACK_RANGE * displayScale;
         float h     = 60f * displayScale;
         float ax = facingRight
@@ -189,6 +193,9 @@ public class Player extends Entity {
                 : position.x - range;
         return new Rectangle(ax, position.y + 10, range, h);
     }
+
+    /** Call after a melee hit lands to prevent damage being applied every frame. */
+    public void landMeleeHit() { meleeHitLanded = true; }
 
     // ── Private ───────────────────────────────────────────────────────────────
 
@@ -223,8 +230,9 @@ public class Player extends Entity {
         boolean attackKey   = Gdx.input.isKeyJustPressed(Keys.F) || Gdx.input.isKeyJustPressed(Keys.Z);
         boolean attackTouch = (touchControls != null) && touchControls.isAttackJustPressed();
         if (canAttack && !attacking && (attackKey || attackTouch)) {
-            attacking   = true;
-            attackTimer = 0f;
+            attacking      = true;
+            attackTimer    = 0f;
+            meleeHitLanded = false;
             if (sndAttack != null) sndAttack.play(0.7f);
             if (playerClass == PlayerClass.ARCHER) {
                 float arrowX = facingRight ? position.x + HITBOX_W : position.x;

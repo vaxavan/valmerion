@@ -215,6 +215,7 @@ public class AcademyScreen extends BaseScreen {
         com.badlogic.gdx.math.Rectangle atk = player.getAttackHitbox();
         if (atk != null && atk.overlaps(gBox)) {
             goblin.takeDamage(Constants.PLAYER_ATTACK_DAMAGE);
+            player.landMeleeHit();
         }
         for (com.valmerion.entities.Arrow a : player.getArrows()) {
             if (a.isActive() && a.getHitbox().overlaps(gBox)) {
